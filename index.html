@@ -781,7 +781,11 @@ function getSkAspects(vendor){
   return SK_ASPECTS.map(a => overrides[a.no] ? Object.assign({}, a, overrides[a.no]) : a);
 }
 let skVendor = SK_VENDORS[0];
-let skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
+let skPeriodeTahun = 2026;
+let skPeriodeSemester = "I";
+let skPeriodeInitialized = false;
+let skData = { pjo:"", nilai:{} };
+const SK_LAST_PERIODE_KEY = 'summaryKinerja:lastPeriode';
 
 /* ---- Seed Nilai per aspek dari hasil Rincian Status Pemenuhan (Checklist Sem I 2026) ---- */
 /* Nilai = (% item "Sudah" terhadap item non-N/A) x 100, dibulatkan 2 desimal. Dipakai hanya  */
@@ -1046,7 +1050,8 @@ async function skSyncFromSheet(){
   }
 }
 
-function skKeyFor(vendor){ return 'summaryKinerja:' + vendor; }
+function skKeyFor(vendor, tahun, semester){ return 'summaryKinerja:' + tahun + ':' + semester + ':' + vendor; }
+function skLegacyKeyFor(vendor){ return 'summaryKinerja:' + vendor; } // format lama (sebelum ada pemisahan per semester/tahun)
 
 function skPredikat(nilai){
   if(nilai > 90) return 'Emas';
@@ -1125,30 +1130,65 @@ function renderSkResult(){
 let skSaveTimer = null;
 function scheduleSkSave(){ clearTimeout(skSaveTimer); skSaveTimer = setTimeout(saveSkData, 500); }
 async function saveSkData(){
-  skData.semester = document.getElementById('skSemester').value;
-  skData.tahun = document.getElementById('skTahun').value;
   skData.pjo = document.getElementById('skPjo').value;
-  try{ await store.set(skKeyFor(skVendor), JSON.stringify(skData)); }
+  try{ await store.set(skKeyFor(skVendor, skPeriodeTahun, skPeriodeSemester), JSON.stringify(skData)); }
   catch(e){ console.error('Gagal menyimpan summary kinerja', e); }
 }
 async function loadSkData(){
+  const key = skKeyFor(skVendor, skPeriodeTahun, skPeriodeSemester);
   try{
-    const res = await store.get(skKeyFor(skVendor));
-    skData = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
+    const res = await store.get(key);
+    skData = (res && res.value) ? JSON.parse(res.value) : null;
   }catch(e){
-    skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
+    skData = null;
   }
-  // Auto-seed dari SK_SEED_NILAI dimatikan atas permintaan — Nilai Awal Summary Kinerja PJP
-  // untuk seluruh mitra (MVM, VGT, VSC, BGS, LDP) diisi manual satu per satu.
-  if(!skData.nilai){
-    skData.nilai = {};
+  if(!skData){
+    // Belum ada data utk periode ini -> coba migrasi dari format lama (sebelum pemisahan
+    // per semester/tahun), HANYA berlaku utk periode default Semester I 2026.
+    if(skPeriodeTahun === 2026 && skPeriodeSemester === "I"){
+      try{
+        const legacy = await store.get(skLegacyKeyFor(skVendor));
+        if(legacy && legacy.value){
+          skData = JSON.parse(legacy.value);
+          await store.set(key, JSON.stringify(skData)); // simpan ulang ke format baru
+        }
+      }catch(e){ /* tidak ada data lama */ }
+    }
   }
+  if(!skData) skData = { pjo:"", nilai:{} };
+  if(!skData.nilai) skData.nilai = {};
+}
+async function loadSkLastPeriode(){
+  try{
+    const res = await store.get(SK_LAST_PERIODE_KEY);
+    if(res && res.value){
+      const p = JSON.parse(res.value);
+      if(p.tahun) skPeriodeTahun = Number(p.tahun);
+      if(p.semester) skPeriodeSemester = p.semester;
+    }
+  }catch(e){ /* pakai default */ }
+}
+async function saveSkLastPeriode(){
+  try{ await store.set(SK_LAST_PERIODE_KEY, JSON.stringify({ tahun: skPeriodeTahun, semester: skPeriodeSemester })); }
+  catch(e){}
+}
+async function handleSkPeriodeChange(){
+  const newSemester = document.getElementById('skSemester').value;
+  const newTahun = Number(document.getElementById('skTahun').value) || skPeriodeTahun;
+  if(newSemester === skPeriodeSemester && newTahun === skPeriodeTahun) return;
+  await saveSkData(); // simpan data periode SEBELUM pindah, ke key periode lama
+  skPeriodeSemester = newSemester;
+  skPeriodeTahun = newTahun;
+  await saveSkLastPeriode();
+  await loadSkData(); // muat data periode baru (kosong kalau belum pernah diisi)
+  renderSummaryKinerjaUI();
+  skSyncFromSheet();
 }
 
 function renderSummaryKinerjaUI(){
   document.getElementById('skNamaPjp').value = vendorDisplay(skVendor);
-  document.getElementById('skSemester').value = skData.semester || "I";
-  document.getElementById('skTahun').value = skData.tahun || 2026;
+  document.getElementById('skSemester').value = skPeriodeSemester;
+  document.getElementById('skTahun').value = skPeriodeTahun;
   document.getElementById('skPjo').value = skData.pjo || "";
   renderSkVendorTabs();
   renderSkNextDate();
@@ -1156,12 +1196,13 @@ function renderSummaryKinerjaUI(){
   renderSkResult();
 }
 
-document.getElementById('skSemester').onchange = scheduleSkSave;
-document.getElementById('skTahun').oninput = scheduleSkSave;
+document.getElementById('skSemester').addEventListener('change', handleSkPeriodeChange);
+document.getElementById('skTahun').addEventListener('change', handleSkPeriodeChange);
 document.getElementById('skPjo').oninput = scheduleSkSave;
 document.getElementById('skSyncBtn').onclick = skSyncFromSheet;
 
 async function renderSummaryKinerja(){
+  if(!skPeriodeInitialized){ await loadSkLastPeriode(); skPeriodeInitialized = true; }
   await loadSkData();
   renderSummaryKinerjaUI();
   skSyncFromSheet();
