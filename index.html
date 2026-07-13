@@ -1080,7 +1080,7 @@ function renderSkVendorTabs(){
   el.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       if(e.target.classList.contains('vt-label') && document.activeElement === e.target) return;
-      skVendor = btn.dataset.v; await loadSkData(); renderSummaryKinerjaUI(); skSyncFromSheet();
+      skVendor = btn.dataset.v; renderSkNextDate(); await loadSkData(); renderSummaryKinerjaUI(); skSyncFromSheet();
     });
   });
   bindVendorLabelEditing(el);
