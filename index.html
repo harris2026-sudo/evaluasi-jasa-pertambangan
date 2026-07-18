@@ -139,6 +139,25 @@
   .sk-sync-bar #skSyncStatus.ok{color:#1a7f37;font-weight:bold;}
   .sk-sync-bar #skSyncStatus.err{color:#c0392b;font-weight:bold;}
   .sk-sync-bar #skSyncStatus.loading{color:var(--accent);font-weight:bold;}
+  #skSyncBtn{position:relative;}
+  .sk-sync-badge{position:absolute;top:-7px;right:-7px;background:#9C0006;color:#fff;font-size:11px;font-weight:bold;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;animation:skPulse 1.4s infinite;}
+  .sk-sync-badge.show{display:flex;}
+  @keyframes skPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .sk-vendor-tabs button{position:relative;}
+  .sk-vendor-dot{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:#9C0006;display:none;}
+  .sk-vendor-dot.show{display:block;}
+  #skUpdateToast{position:fixed;bottom:24px;right:24px;max-width:340px;background:#fff;border:1px solid #D6E4F0;border-left:4px solid #2E5FA3;border-radius:8px;padding:14px 16px;box-shadow:0 4px 14px rgba(31,56,100,0.18);display:flex;gap:10px;align-items:flex-start;z-index:9999;transform:translateY(12px);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease;}
+  #skUpdateToast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+  #skUpdateToast .sk-toast-icon{font-size:18px;margin-top:1px;}
+  #skUpdateToast .sk-toast-title{margin:0 0 3px;font-size:13.5px;font-weight:bold;color:#1F3864;}
+  #skUpdateToast .sk-toast-body{margin:0 0 10px;font-size:12.5px;color:#555;}
+  #skUpdateToast .sk-toast-actions{display:flex;gap:8px;}
+  #skUpdateToast button{border:none;border-radius:6px;padding:6px 14px;font-size:12.5px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  #skUpdateToast button:hover{transform:translateY(-1px);}
+  #skUpdateToast button:active{transform:scale(.97);}
+  #skUpdateToast .sk-toast-sync{background:#1F3864;color:#fff;}
+  #skUpdateToast .sk-toast-dismiss{background:#F2F2F2;color:#555;}
+  #skUpdateToast .sk-toast-close{background:none;color:#999;padding:0;margin-left:2px;font-size:16px;line-height:1;align-self:flex-start;}
   .sk-sync-bar .sk-sync-actions{display:flex;gap:6px;flex-wrap:wrap;}
   .sk-sync-bar button{background:var(--hilite);color:var(--navy);border:none;border-radius:7px;padding:7px 12px;font-weight:bold;font-size:11.5px;cursor:pointer;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
   .sk-sync-bar button:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
@@ -253,7 +272,7 @@
       <span id="skSyncStatus">—</span>
       <div class="sk-next-date" id="skNextDate" contenteditable="true" spellcheck="false" title="Tanggal penilaian PJP berikutnya (klik untuk edit)"></div>
       <div class="sk-sync-actions">
-        <button type="button" id="skSyncBtn">🔄 Sync dari Spreadsheet</button>
+        <button type="button" id="skSyncBtn">🔄 Sync dari Spreadsheet<span class="sk-sync-badge" id="skSyncBadge">0</span></button>
       </div>
     </div>
 
@@ -1062,6 +1081,9 @@ async function skSyncFromSheet(){
       const hh = String(now.getHours()).padStart(2,'0');
       const mm = String(now.getMinutes()).padStart(2,'0');
       skSetSyncStatus(`✓ Tersinkron dari Spreadsheet (${updated} aspek) pukul ${hh}:${mm}`, 'ok');
+      delete skPendingUpdates[skVendor];
+      skToastDismissedFor.delete(skVendor);
+      skRenderUpdateIndicators();
     }
   }catch(e){
     console.error('Gagal sync Google Sheets', e);
@@ -1070,6 +1092,109 @@ async function skSyncFromSheet(){
     skSyncing = false;
     if(btn) btn.disabled = false;
   }
+}
+
+/* ---- Notifikasi pembaruan Spreadsheet (cek berkala, semua vendor tab) ---- */
+const SK_CHECK_INTERVAL_MS = 90000; // cek tiap 90 detik, tidak menimpa data — hanya notifikasi
+let skPendingUpdates = {}; // { namaVendor: jumlah aspek berubah }
+let skCheckTimer = null;
+let skToastDismissedFor = new Set();
+
+function skCountDiff(storedNilai, freshNilai, vendor){
+  let count = 0;
+  getSkAspects(vendor).forEach(a => {
+    if(a.max === 0) return;
+    if(freshNilai[a.no] === undefined) return;
+    const stored = storedNilai[a.no];
+    if(stored === undefined || Math.abs(Number(stored) - Number(freshNilai[a.no])) > 0.001) count++;
+  });
+  return count;
+}
+
+async function skCheckVendorForUpdate(vendor){
+  try{
+    const fresh = await skFetchSheetProgress(vendor);
+    const res = await store.get(skKeyFor(vendor));
+    const stored = (res && res.value) ? (JSON.parse(res.value).nilai || {}) : {};
+    const diff = skCountDiff(stored, fresh, vendor);
+    if(diff > 0) skPendingUpdates[vendor] = diff; else delete skPendingUpdates[vendor];
+  }catch(e){
+    // Cek background diam-diam saja kalau gagal (mis. sheet belum bisa diakses) — tidak mengganggu tombol sync manual.
+  }
+}
+
+async function skCheckAllVendorsForUpdates(){
+  for(const vendor of SK_VENDORS){ await skCheckVendorForUpdate(vendor); }
+  skRenderUpdateIndicators();
+}
+
+function skRenderUpdateIndicators(){
+  const vendorsWithUpdate = Object.keys(skPendingUpdates);
+  const badge = document.getElementById('skSyncBadge');
+  if(badge){
+    if(vendorsWithUpdate.length > 0){ badge.textContent = vendorsWithUpdate.length; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+  }
+  document.querySelectorAll('#skVendorTabs button').forEach(btn => {
+    let dot = btn.querySelector('.sk-vendor-dot');
+    if(!dot){ dot = document.createElement('span'); dot.className = 'sk-vendor-dot'; btn.appendChild(dot); }
+    if(skPendingUpdates[btn.dataset.v]) dot.classList.add('show'); else dot.classList.remove('show');
+  });
+  skMaybeShowToast();
+}
+
+function skMaybeShowToast(){
+  const toast = document.getElementById('skUpdateToast');
+  if(!toast) return;
+  let target = skPendingUpdates[skVendor] ? skVendor : Object.keys(skPendingUpdates).find(v => !skToastDismissedFor.has(v));
+  if(!target){ toast.classList.remove('show'); return; }
+  document.getElementById('skToastBody').textContent =
+    `${vendorDisplay(target)} — ${skPendingUpdates[target]} aspek berubah sejak sync terakhir. Data lokal belum ditimpa.`;
+  toast.dataset.vendor = target;
+  toast.classList.add('show');
+}
+
+async function skSyncVendorInBackground(vendor){
+  const fresh = await skFetchSheetProgress(vendor);
+  const res = await store.get(skKeyFor(vendor));
+  const data = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
+  let updated = 0;
+  getSkAspects(vendor).forEach(a => {
+    if(a.max === 0) return;
+    if(fresh[a.no] !== undefined){ data.nilai[a.no] = fresh[a.no]; updated++; }
+  });
+  if(updated > 0) await store.set(skKeyFor(vendor), JSON.stringify(data));
+}
+
+document.getElementById('skToastSyncBtn').onclick = async () => {
+  const toast = document.getElementById('skUpdateToast');
+  const target = toast.dataset.vendor;
+  if(!target) return;
+  toast.classList.remove('show');
+  try{
+    if(target === skVendor) await skSyncFromSheet();
+    else await skSyncVendorInBackground(target);
+  }catch(e){ console.error('Gagal sync dari notifikasi', target, e); }
+  delete skPendingUpdates[target];
+  skToastDismissedFor.delete(target);
+  skRenderUpdateIndicators();
+};
+document.getElementById('skToastDismissBtn').onclick = () => {
+  const toast = document.getElementById('skUpdateToast');
+  if(toast.dataset.vendor) skToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+  skMaybeShowToast();
+};
+document.getElementById('skToastCloseBtn').onclick = () => {
+  const toast = document.getElementById('skUpdateToast');
+  if(toast.dataset.vendor) skToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+};
+
+function skStartAutoCheck(){
+  if(skCheckTimer) clearInterval(skCheckTimer);
+  skCheckAllVendorsForUpdates();
+  skCheckTimer = setInterval(skCheckAllVendorsForUpdates, SK_CHECK_INTERVAL_MS);
 }
 
 function skKeyFor(vendor){ return 'summaryKinerja:' + vendor; }
@@ -1105,6 +1230,7 @@ function renderSkVendorTabs(){
     });
   });
   bindVendorLabelEditing(el);
+  skRenderUpdateIndicators();
 }
 
 function renderSkTable(){
@@ -1274,7 +1400,20 @@ async function migrateVendorRenames(){
   await loadRcData();
   renderRincian();
   renderSummaryKinerja();
+  skStartAutoCheck();
 })();
 </script>
+<div id="skUpdateToast">
+  <span class="sk-toast-icon">🔔</span>
+  <div style="flex:1">
+    <p class="sk-toast-title">Ada pembaruan di Spreadsheet</p>
+    <p class="sk-toast-body" id="skToastBody"></p>
+    <div class="sk-toast-actions">
+      <button type="button" class="sk-toast-sync" id="skToastSyncBtn">Sync sekarang</button>
+      <button type="button" class="sk-toast-dismiss" id="skToastDismissBtn">Nanti</button>
+    </div>
+  </div>
+  <button type="button" class="sk-toast-close" id="skToastCloseBtn" aria-label="Tutup">×</button>
+</div>
 </body>
 </html>
