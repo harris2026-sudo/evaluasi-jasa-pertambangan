@@ -28,16 +28,23 @@
   *{box-sizing:border-box;}
   body{margin:0;font-family:Arial, "Helvetica Neue", sans-serif;background:#EEF2F7;color:#222;}
   .app{max-width:920px;margin:0 auto;padding:16px 16px 60px;}
-  header{background:var(--navy);color:#fff;padding:18px 20px;border-radius:10px;margin-bottom:14px;}
+
+  /* ---- Interactive polish: motion & depth ---- */
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes popIn{from{opacity:0;transform:scale(.94) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  @keyframes rosterPulse{0%{opacity:1;}50%{opacity:.25;}100%{opacity:1;}}
+  .view.active{animation:fadeSlideIn .32s ease;}
+
+  header{background:linear-gradient(135deg,var(--navy),#274b82);color:#fff;padding:18px 20px;border-radius:10px;margin-bottom:14px;box-shadow:0 4px 16px rgba(31,56,100,.25);}
   header h1{margin:0 0 2px;font-size:19px;}
   header p{margin:0;font-size:12px;opacity:.85;}
   .sheet-link-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;}
-  .sheet-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:11.5px;font-weight:bold;padding:6px 12px;border-radius:14px;}
-  .sheet-link:hover{background:rgba(255,255,255,.25);}
+  .sheet-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:11.5px;font-weight:bold;padding:6px 12px;border-radius:14px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sheet-link:hover{background:rgba(255,255,255,.25);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
   .sheet-link-group{display:inline-flex;align-items:center;gap:5px;}
   .sheet-link[contenteditable="true"]{cursor:text;background:rgba(255,255,255,.25);box-shadow:0 0 0 1.5px rgba(255,255,255,.5);}
-  .edit-toggle-btn{width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;}
-  .edit-toggle-btn:hover{background:rgba(255,255,255,.3);}
+  .edit-toggle-btn{width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .edit-toggle-btn:hover{background:rgba(255,255,255,.3);transform:translateY(-1px) scale(1.05);}
   .edit-toggle-btn.active{background:#fff;color:var(--navy);}
   .storage-badge{display:inline-block;font-size:10.5px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.15);color:#fff;}
 
@@ -50,25 +57,30 @@
   .light-editable[contenteditable="true"]:focus{background:var(--hilite);box-shadow:0 0 0 1.5px var(--accent);}
   .fu-form label.light-editable{display:inline-block;}
 
-  .tabs{display:flex;gap:6px;margin-bottom:14px;}
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;position:sticky;top:8px;z-index:20;}
   .tab{
-    flex:1;text-align:center;padding:11px;border-radius:8px;background:#fff;color:var(--navy);
+    flex:1;min-width:130px;text-align:center;padding:11px;border-radius:8px;background:#fff;color:var(--navy);
     font-weight:bold;font-size:13.5px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);
-    border:2px solid transparent;
+    border:2px solid transparent;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;
   }
-  .tab.active{background:var(--navy);color:#fff;}
+  .tab:hover:not(.active){transform:translateY(-2px);background:var(--hilite);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .tab.active{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(31,56,100,.35);}
+  .tab:active{transform:scale(.97);}
 
   .view{display:none;}
   .view.active{display:block;}
 
-  .btn{border:none;border-radius:6px;padding:9px 14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:Arial;}
+  .btn{border:none;border-radius:6px;padding:9px 14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:Arial;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
   .btn-primary{background:var(--accent);color:#fff;}
-  .btn-primary:hover{background:var(--navy);}
+  .btn-primary:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 5px 12px rgba(46,95,163,.35);}
   .btn-ghost{background:var(--hilite);color:var(--navy);}
-  .btn-ghost:hover{background:#c3d7ee;}
+  .btn-ghost:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .btn:active{transform:scale(.97);}
 
   .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
-  .summary .card{background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .summary .card{background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid transparent;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;}
+  .summary .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(31,56,100,.14);border-color:var(--hilite);}
+  .summary .card.clickable{cursor:pointer;}
   .summary .card .num{font-size:20px;font-weight:bold;color:var(--navy);}
   .summary .card .lab{font-size:9.5px;color:#667;margin-top:2px;text-transform:uppercase;letter-spacing:.3px;}
 
@@ -81,15 +93,18 @@
 
   /* Follow Up / NC PJP form & list */
   .fu-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
-  .fu-filter{border:1.5px solid var(--hilite);background:#fff;color:var(--navy);border-radius:14px;padding:6px 12px;font-size:12px;font-weight:bold;cursor:pointer;}
+  .fu-filter{border:1.5px solid var(--hilite);background:#fff;color:var(--navy);border-radius:14px;padding:6px 12px;font-size:12px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .fu-filter:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
   .fu-filter.active{background:var(--accent);color:#fff;border-color:var(--accent);}
   .fu-form{background:#fff;border-radius:10px;padding:12px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-wrap:wrap;gap:10px;}
   .fu-form label{font-size:11px;font-weight:bold;color:var(--navy);display:block;margin-bottom:3px;min-height:26px;line-height:13px;}
-  .fu-form input, .fu-form select, .fu-form textarea{border:1px solid #c7d3e0;border-radius:6px;padding:7px 9px;font-size:13px;font-family:Arial;width:100%;}
+  .fu-form input, .fu-form select, .fu-form textarea{border:1px solid #c7d3e0;border-radius:6px;padding:7px 9px;font-size:13px;font-family:Arial;width:100%;transition:border-color .15s ease,box-shadow .15s ease;}
+  .fu-form input:focus, .fu-form select:focus, .fu-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
   .fu-form .f-grow{flex:2;min-width:200px;}
   .fu-form .f-small{flex:1;min-width:150px;}
   .fu-form .f-vendor{flex:1.5;min-width:210px;}
-  .fu-card{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:5px solid #ccc;}
+  .fu-card{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:5px solid #ccc;transition:transform .15s ease,box-shadow .15s ease;}
+  .fu-card:hover{transform:translateX(2px);box-shadow:0 4px 14px rgba(0,0,0,.1);}
   .fu-card.status-Open{border-left-color:#6a9bcf;}
   .fu-card.status-Onprogress{border-left-color:#d8b400;}
   .fu-card.status-Hold{border-left-color:#d9848c;}
@@ -104,13 +119,16 @@
   .fu-badge.Hold{background:var(--red-bg);color:var(--red-fg);}
   .fu-badge.Close{background:var(--green-bg);color:var(--green);}
   .fu-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
-  .fu-actions select{border:1px solid #c7d3e0;border-radius:6px;padding:4px 6px;font-size:11.5px;font-family:Arial;}
-  .fu-del{background:var(--red-bg);color:var(--red-fg);border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:bold;cursor:pointer;}
+  .fu-actions select{border:1px solid #c7d3e0;border-radius:6px;padding:4px 6px;font-size:11.5px;font-family:Arial;transition:border-color .15s ease,box-shadow .15s ease;}
+  .fu-actions select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
+  .fu-del{background:var(--red-bg);color:var(--red-fg);border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  .fu-del:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.12);}
 
   /* Summary Kinerja PJP view */
   .sk-vendor-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
-  .sk-vendor-tabs button{flex:1;min-width:130px;padding:9px 6px;border-radius:8px;border:1.5px solid var(--hilite);background:#fff;color:var(--navy);font-weight:bold;font-size:12px;cursor:pointer;}
-  .sk-vendor-tabs button.active{background:var(--navy);color:#fff;border-color:var(--navy);}
+  .sk-vendor-tabs button{flex:1;min-width:130px;padding:9px 6px;border-radius:8px;border:1.5px solid var(--hilite);background:#fff;color:var(--navy);font-weight:bold;font-size:12px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;}
+  .sk-vendor-tabs button:hover:not(.active){transform:translateY(-2px);background:var(--hilite);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .sk-vendor-tabs button.active{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;border-color:var(--navy);box-shadow:0 4px 12px rgba(31,56,100,.3);}
   .sk-vendor-tabs button .vt-label{cursor:text;}
   .sk-vendor-tabs button .vt-label[contenteditable="true"]:hover{text-decoration:underline dotted;}
   .sk-vendor-tabs button .vt-label[contenteditable="true"]:focus{outline:none;text-decoration:underline dotted;}
@@ -122,34 +140,39 @@
   .sk-sync-bar #skSyncStatus.err{color:#c0392b;font-weight:bold;}
   .sk-sync-bar #skSyncStatus.loading{color:var(--accent);font-weight:bold;}
   .sk-sync-bar .sk-sync-actions{display:flex;gap:6px;flex-wrap:wrap;}
-  .sk-sync-bar button{background:var(--hilite);color:var(--navy);border:none;border-radius:7px;padding:7px 12px;font-weight:bold;font-size:11.5px;cursor:pointer;white-space:nowrap;}
-  .sk-sync-bar button:hover{background:#c3d7ee;}
-  .sk-sync-bar button:disabled{opacity:.5;cursor:default;}
-  .sk-sync-bar a.sk-open-sheet{background:var(--accent);color:#fff;text-decoration:none;display:inline-block;}
-  .sk-sync-bar a.sk-open-sheet:hover{background:var(--navy);}
-  .sk-next-date{flex:1;min-width:160px;max-width:260px;border:1.5px solid var(--accent);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;color:var(--navy);background:#fff;cursor:text;text-align:center;}
+  .sk-sync-bar button{background:var(--hilite);color:var(--navy);border:none;border-radius:7px;padding:7px 12px;font-weight:bold;font-size:11.5px;cursor:pointer;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sk-sync-bar button:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .sk-sync-bar button:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
+  .sk-sync-bar a.sk-open-sheet{background:var(--accent);color:#fff;text-decoration:none;display:inline-block;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sk-sync-bar a.sk-open-sheet:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .sk-next-date{flex:1;min-width:160px;max-width:260px;border:1.5px solid var(--accent);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;color:var(--navy);background:#fff;cursor:text;text-align:center;transition:background .15s ease,box-shadow .15s ease;}
   .sk-next-date:hover{background:var(--hilite);}
   .sk-next-date:focus{outline:none;background:var(--hilite);box-shadow:0 0 0 2px var(--accent);}
   .sk-next-date:empty::before{content:"Klik untuk isi tanggal penilaian berikutnya";color:#9aa4b2;font-weight:normal;}
-  .sk-info{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .sk-info{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:box-shadow .2s ease;}
+  .sk-info:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
   .sk-info-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
   .sk-info-row:last-child{margin-bottom:0;}
   .sk-info-row .f{flex:1;min-width:130px;}
   .sk-info-row label{font-size:11px;font-weight:bold;color:var(--navy);display:block;margin-bottom:3px;}
   .sk-info-row input, .sk-info-row select{border:1px solid #c7d3e0;border-radius:6px;padding:7px 9px;font-size:13px;font-family:Arial;width:100%;}
-  .sk-table-wrap{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;}
+  .sk-table-wrap{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;transition:box-shadow .2s ease;}
+  .sk-table-wrap:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
   table.sk-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.sk-table th{background:var(--navy);color:#fff;padding:8px 6px;text-align:center;font-size:11px;}
-  table.sk-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;}
+  table.sk-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
+  table.sk-table tbody tr:hover td{background:var(--hilite);}
   table.sk-table tbody tr:nth-child(even){background:var(--zebra);}
   table.sk-table td.sk-name{text-align:left;font-weight:bold;color:#222;}
   table.sk-table td.sk-total{font-weight:bold;background:var(--hilite);color:var(--navy);}
-  table.sk-table input.sk-nilai{width:56px;text-align:center;border:1px solid #c7d3e0;border-radius:5px;padding:4px;font-family:Arial;font-size:12px;}
+  table.sk-table input.sk-nilai{width:56px;text-align:center;border:1px solid #c7d3e0;border-radius:5px;padding:4px;font-family:Arial;font-size:12px;transition:border-color .15s ease,box-shadow .15s ease;}
+  table.sk-table input.sk-nilai:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
   .sk-result{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
-  .sk-result .box{flex:1;min-width:180px;background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);}
+  .sk-result .box{flex:1;min-width:180px;background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:transform .2s ease,box-shadow .2s ease;}
+  .sk-result .box:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(31,56,100,.14);}
   .sk-result .box .lab{font-size:11px;color:#667;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
   .sk-result .box .val{font-size:22px;font-weight:bold;color:var(--navy);}
-  .sk-predikat{display:inline-block;padding:8px 22px;border-radius:8px;font-size:18px;font-weight:bold;}
+  .sk-predikat{display:inline-block;padding:8px 22px;border-radius:8px;font-size:18px;font-weight:bold;animation:popIn .25s ease;}
   .sk-predikat.Emas{background:var(--gold-bg);color:var(--gold-fg);}
   .sk-predikat.Hijau{background:var(--green-bg);color:var(--green);}
   .sk-predikat.Biru{background:var(--blue-bg);color:var(--blue-fg);}
@@ -167,12 +190,14 @@
   .sk-note{font-size:10.5px;color:#889;margin-top:2px;}
 
   /* Rincian Status Pemenuhan view */
-  .rc-vendor-block{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;}
-  .rc-vendor-head{background:var(--navy);color:#fff;padding:10px 14px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rc-vendor-block{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;transition:box-shadow .2s ease;}
+  .rc-vendor-block:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
+  .rc-vendor-head{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;padding:10px 14px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
   .rc-vendor-head .rc-pjo{font-size:11px;font-weight:normal;opacity:.85;}
   table.rc-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.rc-table th{background:var(--accent);color:#fff;padding:7px 6px;text-align:center;font-size:11px;}
-  table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;}
+  table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
+  table.rc-table tbody tr:hover td{background:var(--hilite);}
   table.rc-table td.rc-aspek{text-align:left;font-weight:bold;color:#222;}
   table.rc-table tbody tr:nth-child(even){background:var(--zebra);}
   table.rc-table td.rc-na{color:#aaa;font-style:italic;}
@@ -183,8 +208,9 @@
   .rc-badge.na{background:var(--grey-bg);color:var(--grey-fg);}
   .rc-total-row td{font-weight:bold;background:var(--hilite);color:var(--navy);}
   .rc-note{font-size:10.5px;color:#889;margin:2px 0 14px;padding:0 2px;}
-  .rc-input{width:44px;padding:3px 2px;text-align:center;border-radius:8px;border:1px solid transparent;font-weight:bold;font-size:11.5px;font-family:Arial,sans-serif;}
-  .rc-input:focus{outline:none;border-color:var(--accent);background:#fff;}
+  .rc-input{width:44px;padding:3px 2px;text-align:center;border-radius:8px;border:1px solid transparent;font-weight:bold;font-size:11.5px;font-family:Arial,sans-serif;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;}
+  .rc-input:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.12);}
+  .rc-input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(46,95,163,.2);}
   .rc-input.sudah{background:var(--green-bg);color:var(--green);}
   .rc-input.proses{background:var(--yellow-bg);color:var(--yellow-fg);}
   .rc-input.belum{background:var(--red-bg);color:var(--red-fg);}
@@ -290,7 +316,7 @@
 
   <!-- ================= VIEW: RINCIAN STATUS PEMENUHAN ================= -->
   <div class="view" id="view-rincian">
-    <div class="rc-note"><span id="rcSaveStatus" class="rc-save-status"></span></div>
+    <div class="rc-note">Rincian jumlah item checklist per aspek berdasarkan Status Pemenuhan (Sudah / Dalam Proses / Belum / N/A) — isi manual langsung di kolom tabel, tersimpan otomatis. Aspek bertanda N/A berarti di luar ruang lingkup penilaian mitra tersebut. <span id="rcSaveStatus" class="rc-save-status"></span></div>
     <div id="rcContainer"></div>
   </div>
 
@@ -781,11 +807,7 @@ function getSkAspects(vendor){
   return SK_ASPECTS.map(a => overrides[a.no] ? Object.assign({}, a, overrides[a.no]) : a);
 }
 let skVendor = SK_VENDORS[0];
-let skPeriodeTahun = 2026;
-let skPeriodeSemester = "I";
-let skPeriodeInitialized = false;
-let skData = { pjo:"", nilai:{} };
-const SK_LAST_PERIODE_KEY = 'summaryKinerja:lastPeriode';
+let skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
 
 /* ---- Seed Nilai per aspek dari hasil Rincian Status Pemenuhan (Checklist Sem I 2026) ---- */
 /* Nilai = (% item "Sudah" terhadap item non-N/A) x 100, dibulatkan 2 desimal. Dipakai hanya  */
@@ -1050,8 +1072,7 @@ async function skSyncFromSheet(){
   }
 }
 
-function skKeyFor(vendor, tahun, semester){ return 'summaryKinerja:' + tahun + ':' + semester + ':' + vendor; }
-function skLegacyKeyFor(vendor){ return 'summaryKinerja:' + vendor; } // format lama (sebelum ada pemisahan per semester/tahun)
+function skKeyFor(vendor){ return 'summaryKinerja:' + vendor; }
 
 function skPredikat(nilai){
   if(nilai > 90) return 'Emas';
@@ -1080,7 +1101,7 @@ function renderSkVendorTabs(){
   el.querySelectorAll('button').forEach(btn => {
     btn.addEventListener('click', async (e) => {
       if(e.target.classList.contains('vt-label') && document.activeElement === e.target) return;
-      skVendor = btn.dataset.v; renderSkNextDate(); await loadSkData(); renderSummaryKinerjaUI(); skSyncFromSheet();
+      skVendor = btn.dataset.v; await loadSkData(); renderSummaryKinerjaUI(); skSyncFromSheet();
     });
   });
   bindVendorLabelEditing(el);
@@ -1130,65 +1151,30 @@ function renderSkResult(){
 let skSaveTimer = null;
 function scheduleSkSave(){ clearTimeout(skSaveTimer); skSaveTimer = setTimeout(saveSkData, 500); }
 async function saveSkData(){
+  skData.semester = document.getElementById('skSemester').value;
+  skData.tahun = document.getElementById('skTahun').value;
   skData.pjo = document.getElementById('skPjo').value;
-  try{ await store.set(skKeyFor(skVendor, skPeriodeTahun, skPeriodeSemester), JSON.stringify(skData)); }
+  try{ await store.set(skKeyFor(skVendor), JSON.stringify(skData)); }
   catch(e){ console.error('Gagal menyimpan summary kinerja', e); }
 }
 async function loadSkData(){
-  const key = skKeyFor(skVendor, skPeriodeTahun, skPeriodeSemester);
   try{
-    const res = await store.get(key);
-    skData = (res && res.value) ? JSON.parse(res.value) : null;
+    const res = await store.get(skKeyFor(skVendor));
+    skData = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
   }catch(e){
-    skData = null;
+    skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
   }
-  if(!skData){
-    // Belum ada data utk periode ini -> coba migrasi dari format lama (sebelum pemisahan
-    // per semester/tahun), HANYA berlaku utk periode default Semester I 2026.
-    if(skPeriodeTahun === 2026 && skPeriodeSemester === "I"){
-      try{
-        const legacy = await store.get(skLegacyKeyFor(skVendor));
-        if(legacy && legacy.value){
-          skData = JSON.parse(legacy.value);
-          await store.set(key, JSON.stringify(skData)); // simpan ulang ke format baru
-        }
-      }catch(e){ /* tidak ada data lama */ }
-    }
+  // Auto-seed dari SK_SEED_NILAI dimatikan atas permintaan — Nilai Awal Summary Kinerja PJP
+  // untuk seluruh mitra (MVM, VGT, VSC, BGS, LDP) diisi manual satu per satu.
+  if(!skData.nilai){
+    skData.nilai = {};
   }
-  if(!skData) skData = { pjo:"", nilai:{} };
-  if(!skData.nilai) skData.nilai = {};
-}
-async function loadSkLastPeriode(){
-  try{
-    const res = await store.get(SK_LAST_PERIODE_KEY);
-    if(res && res.value){
-      const p = JSON.parse(res.value);
-      if(p.tahun) skPeriodeTahun = Number(p.tahun);
-      if(p.semester) skPeriodeSemester = p.semester;
-    }
-  }catch(e){ /* pakai default */ }
-}
-async function saveSkLastPeriode(){
-  try{ await store.set(SK_LAST_PERIODE_KEY, JSON.stringify({ tahun: skPeriodeTahun, semester: skPeriodeSemester })); }
-  catch(e){}
-}
-async function handleSkPeriodeChange(){
-  const newSemester = document.getElementById('skSemester').value;
-  const newTahun = Number(document.getElementById('skTahun').value) || skPeriodeTahun;
-  if(newSemester === skPeriodeSemester && newTahun === skPeriodeTahun) return;
-  await saveSkData(); // simpan data periode SEBELUM pindah, ke key periode lama
-  skPeriodeSemester = newSemester;
-  skPeriodeTahun = newTahun;
-  await saveSkLastPeriode();
-  await loadSkData(); // muat data periode baru (kosong kalau belum pernah diisi)
-  renderSummaryKinerjaUI();
-  skSyncFromSheet();
 }
 
 function renderSummaryKinerjaUI(){
   document.getElementById('skNamaPjp').value = vendorDisplay(skVendor);
-  document.getElementById('skSemester').value = skPeriodeSemester;
-  document.getElementById('skTahun').value = skPeriodeTahun;
+  document.getElementById('skSemester').value = skData.semester || "I";
+  document.getElementById('skTahun').value = skData.tahun || 2026;
   document.getElementById('skPjo').value = skData.pjo || "";
   renderSkVendorTabs();
   renderSkNextDate();
@@ -1196,13 +1182,12 @@ function renderSummaryKinerjaUI(){
   renderSkResult();
 }
 
-document.getElementById('skSemester').addEventListener('change', handleSkPeriodeChange);
-document.getElementById('skTahun').addEventListener('change', handleSkPeriodeChange);
+document.getElementById('skSemester').onchange = scheduleSkSave;
+document.getElementById('skTahun').oninput = scheduleSkSave;
 document.getElementById('skPjo').oninput = scheduleSkSave;
 document.getElementById('skSyncBtn').onclick = skSyncFromSheet;
 
 async function renderSummaryKinerja(){
-  if(!skPeriodeInitialized){ await loadSkLastPeriode(); skPeriodeInitialized = true; }
   await loadSkData();
   renderSummaryKinerjaUI();
   skSyncFromSheet();
