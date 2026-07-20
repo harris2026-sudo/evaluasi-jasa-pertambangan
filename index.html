@@ -620,7 +620,8 @@ if(skNextDateEl){
     const clean = skNextDateEl.textContent.replace(/\s+/g, ' ').trim();
     skNextDateEl.textContent = clean;
     skNextDates[skVendor] = clean;
-    scheduleSkNextDateSave();
+    clearTimeout(skNextDateSaveTimer);
+    saveSkNextDates();
   });
   skNextDateEl.addEventListener('keydown', (e) => {
     if(e.key === 'Enter'){ e.preventDefault(); skNextDateEl.blur(); }
@@ -1405,6 +1406,36 @@ async function migrateVendorRenames(){
   renderSummaryKinerja();
   skStartAutoCheck();
 })();
+
+/* ---------------- FLUSH PENYIMPANAN SEBELUM REFRESH/TUTUP TAB ----------------
+   Semua penyimpanan di atas pakai debounce (delay 300-500ms) supaya tidak
+   menulis storage di setiap ketukan tombol. Masalahnya: kalau user refresh
+   atau menutup tab SEBELUM debounce selesai, perubahan terakhir bisa hilang.
+   Fungsi di bawah ini membatalkan timer debounce yang masih tertunda dan
+   langsung menjalankan fungsi simpan-nya begitu tab disembunyikan/ditutup,
+   supaya data terakhir yang diketik selalu ikut tersimpan. */
+function flushAllPendingSaves(){
+  try{
+    if(typeof labelSaveTimer !== 'undefined' && labelSaveTimer){ clearTimeout(labelSaveTimer); saveEditableLabels(); }
+  }catch(e){}
+  try{
+    if(typeof vendorLabelSaveTimer !== 'undefined' && vendorLabelSaveTimer){ clearTimeout(vendorLabelSaveTimer); saveVendorLabels(); }
+  }catch(e){}
+  try{
+    if(typeof skNextDateSaveTimer !== 'undefined' && skNextDateSaveTimer){ clearTimeout(skNextDateSaveTimer); saveSkNextDates(); }
+  }catch(e){}
+  try{
+    if(typeof rcSaveTimer !== 'undefined' && rcSaveTimer){ clearTimeout(rcSaveTimer); saveRcData(); }
+  }catch(e){}
+  try{
+    if(typeof skSaveTimer !== 'undefined' && skSaveTimer){ clearTimeout(skSaveTimer); saveSkData(); }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') flushAllPendingSaves();
+});
+window.addEventListener('pagehide', flushAllPendingSaves);
+window.addEventListener('beforeunload', flushAllPendingSaves);
 </script>
 <div id="skUpdateToast">
   <span class="sk-toast-icon">🔔</span>
