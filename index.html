@@ -590,7 +590,10 @@ async function loadSkNextDates(){
   try{
     const res = await store.get(SK_NEXT_DATE_KEY);
     const saved = (res && res.value) ? JSON.parse(res.value) : {};
-    skNextDates = Object.assign({}, SK_NEXT_DATE_SEED, saved);
+    skNextDates = Object.assign({}, SK_NEXT_DATE_SEED);
+    for(const vendorKey in saved){
+      if(saved[vendorKey]) skNextDates[vendorKey] = saved[vendorKey];
+    }
   }catch(e){ skNextDates = Object.assign({}, SK_NEXT_DATE_SEED); }
 }
 
