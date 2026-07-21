@@ -637,14 +637,23 @@ const SK_NEXT_DATE_SEED = {
 let skNextDates = {};
 
 async function loadSkNextDates(){
+  let needsResave = false;
   try{
     const res = await store.get(SK_NEXT_DATE_KEY);
     const saved = (res && res.value) ? JSON.parse(res.value) : {};
     skNextDates = Object.assign({}, SK_NEXT_DATE_SEED);
     for(const vendorKey in saved){
-      if(saved[vendorKey]) skNextDates[vendorKey] = saved[vendorKey];
+      const trimmed = (saved[vendorKey] || '').trim();
+      if(trimmed){
+        skNextDates[vendorKey] = saved[vendorKey];
+      } else if(vendorKey in saved){
+        // Ada entri kosong/spasi tersimpan yang menutupi jadwal default (seed).
+        // Ini dibersihkan otomatis supaya jadwal default kembali muncul.
+        needsResave = true;
+      }
     }
   }catch(e){ skNextDates = Object.assign({}, SK_NEXT_DATE_SEED); }
+  if(needsResave) saveSkNextDates();
 }
 
 let skNextDateSaveTimer = null;
@@ -663,7 +672,10 @@ function renderSkNextDate(){
 const skNextDateEl = document.getElementById('skNextDate');
 if(skNextDateEl){
   skNextDateEl.addEventListener('input', () => {
-    skNextDates[skVendor] = skNextDateEl.textContent;
+    const raw = skNextDateEl.textContent;
+    // Kalau isinya cuma spasi/kosong, jangan simpan sebagai override —
+    // biarkan jadwal default (seed) tetap tampil kalau tiba-tiba ke-flush saat refresh.
+    skNextDates[skVendor] = raw.trim() ? raw : '';
     scheduleSkNextDateSave();
   });
   skNextDateEl.addEventListener('blur', () => {
