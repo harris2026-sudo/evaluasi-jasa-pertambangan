@@ -479,7 +479,10 @@ async function sheetSet(key, value){
 async function pullAllFromSheet(){
   if(!sheetsEnabled) return;
   try{
-    const res = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'GET', signal: controller.signal });
+    clearTimeout(timeoutId);
     if(!res.ok) return;
     const all = await res.json();
     for(const k in all){
@@ -488,7 +491,7 @@ async function pullAllFromSheet(){
         await baseStore.set(k, v);
       }
     }
-  }catch(e){ console.error('Gagal mengambil data dari Google Sheet, pakai data lokal', e); }
+  }catch(e){ console.error('Gagal mengambil data dari Google Sheet (timeout/offline), pakai data lokal', e); }
 }
 
 // store = lapisan yang dipakai di seluruh aplikasi. Baca tetap dari cache lokal
