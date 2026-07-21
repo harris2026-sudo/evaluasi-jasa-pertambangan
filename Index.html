@@ -1,0 +1,1705 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Evaluasi dan Penilaian Jasa Pertambangan</title>
+<style>
+  :root{
+    --navy:#1F3864;
+    --accent:#2E5FA3;
+    --hilite:#D6E4F0;
+    --zebra:#F2F2F2;
+    --green:#1E7A34;
+    --green-bg:#C6EFCE;
+    --yellow-bg:#FFEB9C;
+    --yellow-fg:#7A6000;
+    --blue-bg:#BDD7EE;
+    --blue-fg:#1F4E79;
+    --red-bg:#FFC7CE;
+    --red-fg:#9C0006;
+    --grey-bg:#E7E6E6;
+    --grey-fg:#555;
+    --gold-bg:#FFD966;
+    --gold-fg:#7F6000;
+    --black-bg:#1a1a1a;
+    --black-fg:#fff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:Arial, "Helvetica Neue", sans-serif;background:#EEF2F7;color:#222;}
+  .app{max-width:920px;margin:0 auto;padding:16px 16px 60px;}
+
+  /* ---- Interactive polish: motion & depth ---- */
+  @keyframes fadeSlideIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+  @keyframes popIn{from{opacity:0;transform:scale(.94) translateY(8px);}to{opacity:1;transform:scale(1) translateY(0);}}
+  @keyframes rosterPulse{0%{opacity:1;}50%{opacity:.25;}100%{opacity:1;}}
+  .view.active{animation:fadeSlideIn .32s ease;}
+
+  header{background:linear-gradient(135deg,var(--navy),#274b82);color:#fff;padding:18px 20px;border-radius:10px;margin-bottom:14px;box-shadow:0 4px 16px rgba(31,56,100,.25);}
+  header h1{margin:0 0 2px;font-size:19px;}
+  header p{margin:0;font-size:12px;opacity:.85;}
+  .sheet-link-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:10px;}
+  .sheet-link{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.15);color:#fff;text-decoration:none;font-size:11.5px;font-weight:bold;padding:6px 12px;border-radius:14px;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sheet-link:hover{background:rgba(255,255,255,.25);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
+  .sheet-link-group{display:inline-flex;align-items:center;gap:5px;}
+  .sheet-link[contenteditable="true"]{cursor:text;background:rgba(255,255,255,.25);box-shadow:0 0 0 1.5px rgba(255,255,255,.5);}
+  .edit-toggle-btn{width:24px;height:24px;border-radius:50%;border:none;background:rgba(255,255,255,.15);color:#fff;font-size:11px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;padding:0;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .edit-toggle-btn:hover{background:rgba(255,255,255,.3);transform:translateY(-1px) scale(1.05);}
+  .edit-toggle-btn.active{background:#fff;color:var(--navy);}
+  .storage-badge{display:inline-block;font-size:10.5px;padding:3px 9px;border-radius:12px;background:rgba(255,255,255,.15);color:#fff;}
+
+  [contenteditable="true"]{outline:none;}
+  header [contenteditable="true"]{border-radius:4px;padding:1px 3px;cursor:text;}
+  header [contenteditable="true"]:hover{background:rgba(255,255,255,.1);}
+  header [contenteditable="true"]:focus{background:rgba(255,255,255,.18);box-shadow:0 0 0 1.5px rgba(255,255,255,.4);}
+  .light-editable[contenteditable="true"]{border-radius:4px;padding:1px 3px;cursor:text;}
+  .light-editable[contenteditable="true"]:hover{background:var(--hilite);}
+  .light-editable[contenteditable="true"]:focus{background:var(--hilite);box-shadow:0 0 0 1.5px var(--accent);}
+  .fu-form label.light-editable{display:inline-block;}
+
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;position:sticky;top:8px;z-index:20;}
+  .tab{
+    position:relative;flex:1;min-width:130px;text-align:center;padding:11px;border-radius:8px;background:#fff;color:var(--navy);
+    font-weight:bold;font-size:13.5px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);
+    border:2px solid transparent;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;
+  }
+  .tab:hover:not(.active){transform:translateY(-2px);background:var(--hilite);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .tab.active{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;transform:translateY(-1px);box-shadow:0 4px 12px rgba(31,56,100,.35);}
+  .tab:active{transform:scale(.97);}
+
+  .view{display:none;}
+  .view.active{display:block;}
+
+  .btn{border:none;border-radius:6px;padding:9px 14px;font-size:13px;font-weight:bold;cursor:pointer;font-family:Arial;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .btn-primary{background:var(--accent);color:#fff;}
+  .btn-primary:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 5px 12px rgba(46,95,163,.35);}
+  .btn-ghost{background:var(--hilite);color:var(--navy);}
+  .btn-ghost:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .btn:active{transform:scale(.97);}
+
+  .summary{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:14px;}
+  .summary .card{background:#fff;border-radius:10px;padding:10px 6px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid transparent;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;}
+  .summary .card:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(31,56,100,.14);border-color:var(--hilite);}
+  .summary .card.clickable{cursor:pointer;}
+  .summary .card .num{font-size:20px;font-weight:bold;color:var(--navy);}
+  .summary .card .lab{font-size:9.5px;color:#667;margin-top:2px;text-transform:uppercase;letter-spacing:.3px;}
+
+  .section-title{font-size:13px;font-weight:bold;color:var(--navy);margin:16px 0 8px;}
+  .empty-note{font-size:12px;color:#999;text-align:center;padding:14px;}
+
+  @media (max-width:600px){
+    .summary{grid-template-columns:repeat(3,1fr);}
+  }
+
+  /* Follow Up / NC PJP form & list */
+  .fu-toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+  .fu-filter{border:1.5px solid var(--hilite);background:#fff;color:var(--navy);border-radius:14px;padding:6px 12px;font-size:12px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .fu-filter:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .fu-filter.active{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .fu-form{background:#fff;border-radius:10px;padding:12px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);display:flex;flex-wrap:wrap;gap:10px;}
+  .fu-form label{font-size:11px;font-weight:bold;color:var(--navy);display:block;margin-bottom:3px;min-height:26px;line-height:13px;}
+  .fu-form input, .fu-form select, .fu-form textarea{border:1px solid #c7d3e0;border-radius:6px;padding:7px 9px;font-size:13px;font-family:Arial;width:100%;transition:border-color .15s ease,box-shadow .15s ease;}
+  .fu-form input:focus, .fu-form select:focus, .fu-form textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
+  .fu-form .f-grow{flex:2;min-width:200px;}
+  .fu-form .f-small{flex:1;min-width:150px;}
+  .fu-form .f-vendor{flex:1.5;min-width:210px;}
+  .fu-card{background:#fff;border-radius:10px;padding:12px 14px;margin-bottom:8px;box-shadow:0 1px 3px rgba(0,0,0,.08);border-left:5px solid #ccc;transition:transform .15s ease,box-shadow .15s ease;}
+  .fu-card:hover{transform:translateX(2px);box-shadow:0 4px 14px rgba(0,0,0,.1);}
+  .fu-card.status-Open{border-left-color:#6a9bcf;}
+  .fu-card.status-Onprogress{border-left-color:#d8b400;}
+  .fu-card.status-Hold{border-left-color:#d9848c;}
+  .fu-card.status-Close{border-left-color:var(--green);}
+  .fu-card .fu-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .fu-card .fu-desc{font-size:13px;color:#222;font-weight:bold;margin-bottom:4px;}
+  .fu-card .fu-meta{font-size:11px;color:#667;}
+  .fu-card .fu-note{font-size:12px;color:#556;margin-top:6px;}
+  .fu-badge{display:inline-block;font-size:10.5px;font-weight:bold;padding:3px 10px;border-radius:12px;white-space:nowrap;}
+  .fu-badge.Open{background:var(--blue-bg);color:var(--blue-fg);}
+  .fu-badge.Onprogress{background:var(--yellow-bg);color:var(--yellow-fg);}
+  .fu-badge.Hold{background:var(--red-bg);color:var(--red-fg);}
+  .fu-badge.Close{background:var(--green-bg);color:var(--green);}
+  .fu-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap;}
+  .fu-actions select{border:1px solid #c7d3e0;border-radius:6px;padding:4px 6px;font-size:11.5px;font-family:Arial;transition:border-color .15s ease,box-shadow .15s ease;}
+  .fu-actions select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
+  .fu-del{background:var(--red-bg);color:var(--red-fg);border:none;border-radius:6px;padding:4px 9px;font-size:11px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  .fu-del:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.12);}
+
+  /* Summary Kinerja PJP view */
+  .sk-vendor-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;}
+  .sk-vendor-tabs button{flex:1;min-width:130px;padding:9px 6px;border-radius:8px;border:1.5px solid var(--hilite);background:#fff;color:var(--navy);font-weight:bold;font-size:12px;cursor:pointer;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;}
+  .sk-vendor-tabs button:hover:not(.active){transform:translateY(-2px);background:var(--hilite);box-shadow:0 4px 10px rgba(31,56,100,.15);}
+  .sk-vendor-tabs button.active{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;border-color:var(--navy);box-shadow:0 4px 12px rgba(31,56,100,.3);}
+  .sk-vendor-tabs button .vt-label{cursor:text;}
+  .sk-vendor-tabs button .vt-label[contenteditable="true"]:hover{text-decoration:underline dotted;}
+  .sk-vendor-tabs button .vt-label[contenteditable="true"]:focus{outline:none;text-decoration:underline dotted;}
+  .sk-vendor-tabs button .vt-edit{cursor:pointer;font-size:10px;margin-left:4px;opacity:.55;}
+  .sk-vendor-tabs button .vt-edit:hover{opacity:1;}
+  .sk-sync-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:10px;padding:9px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:12px;}
+  .sk-sync-bar #skSyncStatus{color:#667;}
+  .sk-sync-bar #skSyncStatus.ok{color:#1a7f37;font-weight:bold;}
+  .sk-sync-bar #skSyncStatus.err{color:#c0392b;font-weight:bold;}
+  .sk-sync-bar #skSyncStatus.loading{color:var(--accent);font-weight:bold;}
+  #skSyncBtn{position:relative;}
+  .sk-sync-badge{position:absolute;top:-7px;right:-7px;background:#9C0006;color:#fff;font-size:11px;font-weight:bold;width:18px;height:18px;border-radius:50%;display:none;align-items:center;justify-content:center;animation:skPulse 1.4s infinite;}
+  .sk-sync-badge.show{display:flex;}
+  @keyframes skPulse{0%,100%{opacity:1;}50%{opacity:.35;}}
+  .sk-vendor-tabs button{position:relative;}
+  .sk-vendor-dot{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:#9C0006;display:none;}
+  .sk-vendor-dot.show{display:block;}
+  .update-toast{position:fixed;bottom:24px;right:24px;max-width:340px;background:#fff;border:1px solid #D6E4F0;border-left:4px solid #2E5FA3;border-radius:8px;padding:14px 16px;box-shadow:0 4px 14px rgba(31,56,100,0.18);display:flex;gap:10px;align-items:flex-start;z-index:9999;transform:translateY(12px);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease;}
+  .update-toast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .update-toast .sk-toast-icon{font-size:18px;margin-top:1px;}
+  .update-toast .sk-toast-title{margin:0 0 3px;font-size:13.5px;font-weight:bold;color:#1F3864;}
+  .update-toast .sk-toast-body{margin:0 0 10px;font-size:12.5px;color:#555;}
+  .update-toast .sk-toast-actions{display:flex;gap:8px;}
+  .update-toast button{border:none;border-radius:6px;padding:6px 14px;font-size:12.5px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  .update-toast button:hover{transform:translateY(-1px);}
+  .update-toast button:active{transform:scale(.97);}
+  .update-toast .sk-toast-sync{background:#1F3864;color:#fff;}
+  .update-toast .sk-toast-dismiss{background:#F2F2F2;color:#555;}
+  .update-toast .sk-toast-close{background:none;color:#999;padding:0;margin-left:2px;font-size:16px;line-height:1;align-self:flex-start;}
+  #rcUpdateToast{bottom:auto;top:24px;}
+  .sk-sync-bar .sk-sync-actions{display:flex;gap:6px;flex-wrap:wrap;}
+  .sk-sync-bar button{background:var(--hilite);color:var(--navy);border:none;border-radius:7px;padding:7px 12px;font-weight:bold;font-size:11.5px;cursor:pointer;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sk-sync-bar button:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .sk-sync-bar button:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
+  .sk-sync-bar a.sk-open-sheet{background:var(--accent);color:#fff;text-decoration:none;display:inline-block;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .sk-sync-bar a.sk-open-sheet:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
+  .sk-next-date{flex:1;min-width:160px;max-width:260px;border:1.5px solid var(--accent);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;color:var(--navy);background:#fff;cursor:text;text-align:center;transition:background .15s ease,box-shadow .15s ease;font-family:inherit;}
+  .sk-next-date:hover{background:var(--hilite);}
+  .sk-next-date:focus{outline:none;background:var(--hilite);box-shadow:0 0 0 2px var(--accent);}
+  .sk-next-date::placeholder{color:#9aa4b2;font-weight:normal;}
+  .sk-info{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:box-shadow .2s ease;}
+  .sk-info:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
+  .sk-info-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
+  .sk-info-row:last-child{margin-bottom:0;}
+  .sk-info-row .f{flex:1;min-width:130px;}
+  .sk-info-row label{font-size:11px;font-weight:bold;color:var(--navy);display:block;margin-bottom:3px;}
+  .sk-info-row input, .sk-info-row select{border:1px solid #c7d3e0;border-radius:6px;padding:7px 9px;font-size:13px;font-family:Arial;width:100%;}
+  .sk-table-wrap{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;transition:box-shadow .2s ease;}
+  .sk-table-wrap:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
+  table.sk-table{width:100%;border-collapse:collapse;font-size:12px;}
+  table.sk-table th{background:var(--navy);color:#fff;padding:8px 6px;text-align:center;font-size:11px;}
+  table.sk-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
+  table.sk-table tbody tr:hover td{background:var(--hilite);}
+  table.sk-table tbody tr:nth-child(even){background:var(--zebra);}
+  table.sk-table td.sk-name{text-align:left;font-weight:bold;color:#222;}
+  table.sk-table td.sk-total{font-weight:bold;background:var(--hilite);color:var(--navy);}
+  table.sk-table input.sk-nilai{width:56px;text-align:center;border:1px solid #c7d3e0;border-radius:5px;padding:4px;font-family:Arial;font-size:12px;transition:border-color .15s ease,box-shadow .15s ease;}
+  table.sk-table input.sk-nilai:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px rgba(46,95,163,.15);}
+  .sk-result{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px;}
+  .sk-result .box{flex:1;min-width:180px;background:#fff;border-radius:10px;padding:14px;text-align:center;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:transform .2s ease,box-shadow .2s ease;}
+  .sk-result .box:hover{transform:translateY(-3px);box-shadow:0 8px 18px rgba(31,56,100,.14);}
+  .sk-result .box .lab{font-size:11px;color:#667;text-transform:uppercase;letter-spacing:.3px;margin-bottom:6px;}
+  .sk-result .box .val{font-size:22px;font-weight:bold;color:var(--navy);}
+  .sk-predikat{display:inline-block;padding:8px 22px;border-radius:8px;font-size:18px;font-weight:bold;animation:popIn .25s ease;}
+  .sk-predikat.Emas{background:var(--gold-bg);color:var(--gold-fg);}
+  .sk-predikat.Hijau{background:var(--green-bg);color:var(--green);}
+  .sk-predikat.Biru{background:var(--blue-bg);color:var(--blue-fg);}
+  .sk-predikat.Merah{background:var(--red-bg);color:var(--red-fg);}
+  .sk-predikat.Hitam{background:var(--black-bg);color:var(--black-fg);}
+  .sk-legend{background:#fff;border-radius:10px;padding:10px 14px;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;}
+  .sk-legend table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .sk-legend th{background:var(--accent);color:#fff;padding:5px 8px;text-align:left;}
+  .sk-legend td{padding:5px 8px;border-bottom:1px solid #eee;}
+  .sk-legend td.p-Emas{color:var(--gold-fg);font-weight:bold;}
+  .sk-legend td.p-Hijau{color:var(--green);font-weight:bold;}
+  .sk-legend td.p-Biru{color:var(--blue-fg);font-weight:bold;}
+  .sk-legend td.p-Merah{color:var(--red-fg);font-weight:bold;}
+  .sk-legend td.p-Hitam{color:#000;font-weight:bold;}
+  .sk-note{font-size:10.5px;color:#889;margin-top:2px;}
+
+  /* Rincian Status Pemenuhan view */
+  .rc-vendor-block{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;transition:box-shadow .2s ease;}
+  .rc-vendor-block:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
+  .rc-vendor-head{position:relative;background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;padding:10px 14px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rc-vendor-head .rc-pjo{font-size:11px;font-weight:normal;opacity:.85;}
+  .rc-sync-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .rc-sync-btn:hover{background:rgba(255,255,255,.32);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
+  .rc-sync-btn:active{transform:scale(.96);}
+  .rc-sync-btn:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none;}
+  table.rc-table{width:100%;border-collapse:collapse;font-size:12px;}
+  table.rc-table th{background:var(--accent);color:#fff;padding:7px 6px;text-align:center;font-size:11px;}
+  table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
+  table.rc-table tbody tr:hover td{background:var(--hilite);}
+  table.rc-table td.rc-aspek{text-align:left;font-weight:bold;color:#222;}
+  table.rc-table tbody tr:nth-child(even){background:var(--zebra);}
+  table.rc-table td.rc-na{color:#aaa;font-style:italic;}
+  .rc-badge{display:inline-block;min-width:22px;padding:2px 6px;border-radius:8px;font-weight:bold;font-size:11.5px;}
+  .rc-badge.sudah{background:var(--green-bg);color:var(--green);}
+  .rc-badge.proses{background:var(--yellow-bg);color:var(--yellow-fg);}
+  .rc-badge.belum{background:var(--red-bg);color:var(--red-fg);}
+  .rc-badge.na{background:var(--grey-bg);color:var(--grey-fg);}
+  .rc-total-row td{font-weight:bold;background:var(--hilite);color:var(--navy);}
+  .rc-note{font-size:10.5px;color:#889;margin:2px 0 14px;padding:0 2px;}
+  .rc-input{width:44px;padding:3px 2px;text-align:center;border-radius:8px;border:1px solid transparent;font-weight:bold;font-size:11.5px;font-family:Arial,sans-serif;transition:transform .15s ease,box-shadow .15s ease,border-color .15s ease;}
+  .rc-input:hover{transform:translateY(-1px);box-shadow:0 2px 6px rgba(0,0,0,.12);}
+  .rc-input:focus{outline:none;border-color:var(--accent);background:#fff;box-shadow:0 0 0 2px rgba(46,95,163,.2);}
+  .rc-input.sudah{background:var(--green-bg);color:var(--green);}
+  .rc-input.proses{background:var(--yellow-bg);color:var(--yellow-fg);}
+  .rc-input.belum{background:var(--red-bg);color:var(--red-fg);}
+  .rc-input.na{background:var(--grey-bg);color:var(--grey-fg);}
+  .rc-save-status{font-size:10px;font-weight:normal;opacity:.85;}
+
+  footer{text-align:center;font-size:11px;color:#889;margin-top:20px;}
+
+  @media (max-width:600px){
+    table.sk-table{font-size:10.5px;}
+    table.sk-table input.sk-nilai{width:42px;font-size:10.5px;}
+    .summary{grid-template-columns:repeat(2,1fr);}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 contenteditable="true" data-label-key="headerTitle">📊 Sistem Evaluasi dan Penilaian Jasa Pertambangan</h1>
+    <p contenteditable="true" data-label-key="headerSubtitle">Digital &amp; Technology Division (Digitech) · Digital Sustainability Operation · PT Borneo Indobara</p>
+    <div class="sheet-link-bar">
+      <span class="storage-badge">Site Reliability Engineer</span>
+      <span class="sheet-link-group">
+        <a class="sheet-link" id="headerSheetLink" href="https://docs.google.com/spreadsheets/d/1cWBr2Vpcqi8wFp14yxKDLUypshZgN5q-/edit?gid=537798305#gid=537798305" target="_blank" rel="noopener" data-label-key="sheetLinkText" title="Klik untuk membuka spreadsheet">🔗 Buka Spreadsheet Sumber Data</a>
+        <button type="button" class="edit-toggle-btn" id="sheetLinkEditBtn" title="Edit teks link">✏️</button>
+      </span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <div class="tab active" data-view="summarykinerja">📈 Summary Kinerja PJP</div>
+    <div class="tab" data-view="rincian">📋 Rincian Status Pemenuhan<span class="sk-sync-badge" id="rcSyncBadge">0</span></div>
+    <div class="tab" data-view="ncpjp">📋 NC Pemenuhan PJP</div>
+  </div>
+
+  <!-- ================= VIEW: SUMMARY KINERJA PJP ================= -->
+  <div class="view active" id="view-summarykinerja">
+    <div class="sk-vendor-tabs" id="skVendorTabs"></div>
+    <div class="sk-sync-bar" id="skSyncBar">
+      <span id="skSyncStatus">—</span>
+      <input type="text" class="sk-next-date" id="skNextDate" spellcheck="false" autocomplete="off" placeholder="Klik untuk isi tanggal penilaian berikutnya" title="Tanggal penilaian PJP berikutnya (klik untuk edit)">
+      <div class="sk-sync-actions">
+        <button type="button" id="skSyncBtn">🔄 Sync dari Spreadsheet<span class="sk-sync-badge" id="skSyncBadge">0</span></button>
+      </div>
+    </div>
+
+    <div class="sk-info">
+      <div class="sk-info-row">
+        <div class="f"><label>Semester</label>
+          <select id="skSemester"><option>I</option><option>II</option></select>
+        </div>
+        <div class="f"><label>Tahun</label>
+          <input type="number" id="skTahun" value="2026">
+        </div>
+        <div class="f" style="flex:2;"><label>Nama Perusahaan Jasa Pertambangan</label>
+          <input type="text" id="skNamaPjp" disabled>
+        </div>
+      </div>
+      <div class="sk-info-row">
+        <div class="f" style="flex:2;"><label>Nama Penanggung Jawab Operasional (PJO)</label>
+          <input type="text" id="skPjo" placeholder="Nama PJO">
+        </div>
+      </div>
+    </div>
+
+    <div class="sk-table-wrap">
+      <table class="sk-table">
+        <thead>
+          <tr>
+            <th>No</th><th style="text-align:left;">Aspek Penilaian</th><th>Bobot Nilai</th>
+            <th>Nilai Max</th><th>Nilai Awal</th><th>Nilai Akhir</th>
+          </tr>
+        </thead>
+        <tbody id="skTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="sk-result">
+      <div class="box">
+        <div class="lab">Nilai Overall Kinerja PJP</div>
+        <div class="val" id="skOverallVal">0.00</div>
+      </div>
+      <div class="box">
+        <div class="lab">Predikat Overall Kinerja PJP</div>
+        <div id="skPredikatVal"><span class="sk-predikat Hitam">HITAM</span></div>
+      </div>
+    </div>
+
+    <div class="sk-legend">
+      <table>
+        <thead><tr><th>Nilai</th><th>Predikat</th></tr></thead>
+        <tbody>
+          <tr><td>Nilai &gt; 90</td><td class="p-Emas">Emas</td></tr>
+          <tr><td>80 &lt; Nilai ≤ 90</td><td class="p-Hijau">Hijau</td></tr>
+          <tr><td>65 ≤ Nilai ≤ 80</td><td class="p-Biru">Biru</td></tr>
+          <tr><td>50 &lt; Nilai &lt; 65</td><td class="p-Merah">Merah</td></tr>
+          <tr><td>Nilai ≤ 50</td><td class="p-Hitam">Hitam</td></tr>
+        </tbody>
+      </table>
+      <div class="sk-note light-editable" contenteditable="true" data-label-key="skNoteText">Nilai Awal &amp; Nilai Akhir diisi manual per aspek (0–100), atau otomatis via Sync dari Spreadsheet. Nilai Overall = Σ(Bobot × Nilai) / Σ(Bobot aspek yang terisi). Aspek Konservasi selalu N/A (di luar ruang lingkup). Aspek SMKP N/A untuk sebagian besar vendor, kecuali Lintech Duta Pratama (bobot 15%). Aspek lain yang dikosongkan (belum ada data pemenuhan) juga dianggap N/A dan tidak mengurangi Nilai Overall.</div>
+    </div>
+  </div>
+
+  <!-- ================= VIEW: RINCIAN STATUS PEMENUHAN ================= -->
+  <div class="view" id="view-rincian">
+    <div class="rc-note">Rincian jumlah item checklist per aspek berdasarkan Status Pemenuhan (Sudah / Dalam Proses / Belum / N/A) — isi manual langsung di kolom tabel, tersimpan otomatis. Aspek bertanda N/A berarti di luar ruang lingkup penilaian mitra tersebut. Sistem otomatis memeriksa perubahan Status Pemenuhan di spreadsheet setiap 90 detik dan akan memberi notifikasi bila ada perbedaan. <span id="rcSaveStatus" class="rc-save-status"></span></div>
+    <div id="rcContainer"></div>
+  </div>
+
+  <!-- ================= VIEW: NC PEMENUHAN PJP ================= -->
+  <div class="view" id="view-ncpjp">
+    <div class="fu-form">
+      <div class="f-vendor">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelVendor">Nama Perusahaan Jasa Pertambangan</label>
+        <select id="ncVendor"></select>
+      </div>
+      <div class="f-small">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelAspek">Aspek Penilaian</label>
+        <select id="ncAspek">
+          <option>Aspek Teknis Operasional</option>
+          <option>Aspek Keselamatan Pertambangan</option>
+          <option>Aspek SMKP</option>
+          <option>Aspek Pengelolaan Lingkungan Hidup</option>
+          <option>Aspek Standarisasi Usaha Jasa</option>
+          <option>Aspek Improvement</option>
+        </select>
+      </div>
+      <div class="f-grow">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelTemuan">Temuan / Ketidaksesuaian (NC)</label>
+        <input type="text" id="ncTemuan" placeholder="Contoh: Kelengkapan dokumen SPIP belum terpenuhi">
+      </div>
+      <div class="f-grow">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelRencana">Rencana Pemenuhan / Tindak Lanjut</label>
+        <input type="text" id="ncRencana" placeholder="Rencana perbaikan / pemenuhan oleh vendor">
+      </div>
+      <div class="f-small">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelPic">PIC Vendor</label>
+        <input type="text" id="ncPic" placeholder="PIC vendor / internal">
+      </div>
+      <div class="f-small">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelDue">Due Date Pemenuhan</label>
+        <input type="date" id="ncDue">
+      </div>
+      <div class="f-small">
+        <label contenteditable="true" class="light-editable" data-label-key="ncLabelStatus">Status</label>
+        <select id="ncStatus">
+          <option>Open</option>
+          <option>Onprogress</option>
+          <option>Hold</option>
+          <option>Close</option>
+        </select>
+      </div>
+      <div style="align-self:flex-end;">
+        <button class="btn btn-primary" id="ncAddBtn">+ Tambah NC PJP</button>
+      </div>
+    </div>
+
+    <div class="sk-vendor-tabs" id="ncVendorFilterBar"></div>
+    <div class="summary" id="ncSummaryCards"></div>
+    <div class="fu-toolbar" id="ncFilterBar"></div>
+    <div id="ncList"></div>
+  </div>
+
+  <footer>Maintain. Monitor. Improve. — Digitech Monitoring Team</footer>
+</div>
+
+<div id="skUpdateToast" class="update-toast">
+  <span class="sk-toast-icon">🔔</span>
+  <div style="flex:1">
+    <p class="sk-toast-title">Ada pembaruan di Spreadsheet</p>
+    <p class="sk-toast-body" id="skToastBody"></p>
+    <div class="sk-toast-actions">
+      <button type="button" class="sk-toast-sync" id="skToastSyncBtn">Sync sekarang</button>
+      <button type="button" class="sk-toast-dismiss" id="skToastDismissBtn">Nanti</button>
+    </div>
+  </div>
+  <button type="button" class="sk-toast-close" id="skToastCloseBtn" aria-label="Tutup">×</button>
+</div>
+<div id="rcUpdateToast" class="update-toast">
+  <span class="sk-toast-icon">📋</span>
+  <div style="flex:1">
+    <p class="sk-toast-title">Ada perubahan Status Pemenuhan</p>
+    <p class="sk-toast-body" id="rcToastBody"></p>
+    <div class="sk-toast-actions">
+      <button type="button" class="sk-toast-sync" id="rcToastSyncBtn">Sync sekarang</button>
+      <button type="button" class="sk-toast-dismiss" id="rcToastDismissBtn">Nanti</button>
+    </div>
+  </div>
+  <button type="button" class="sk-toast-close" id="rcToastCloseBtn" aria-label="Tutup">×</button>
+</div>
+
+<script>
+/* ---------------- STORAGE LAYER (auto fallback) ---------------- */
+// Deteksi apakah localStorage benar-benar bisa dipakai (bisa gagal dengan
+// SecurityError "opaque origin" saat file dibuka langsung via file:// atau
+// ditampilkan dalam iframe/preview yang di-sandbox tanpa allow-same-origin).
+function detectLocalStorageAvailable(){
+  try{
+    const testKey = '__storage_test__' + Date.now();
+    localStorage.setItem(testKey, '1');
+    localStorage.removeItem(testKey);
+    return true;
+  }catch(e){
+    return false;
+  }
+}
+const localStorageAvailable = detectLocalStorageAvailable();
+
+// Fallback terakhir: penyimpanan di memori (hilang saat tab ditutup/refresh).
+// Dipakai HANYA kalau localStorage benar-benar tidak bisa diakses, supaya
+// aplikasi tetap jalan (tidak error) walau data tidak persisten.
+const memoryStore = {};
+const memoryFallback = {
+  async get(key){
+    if(!(key in memoryStore)) throw new Error('not found');
+    return { key, value: memoryStore[key], shared: false };
+  },
+  async set(key, value){
+    memoryStore[key] = value;
+    return { key, value, shared: false };
+  },
+  async delete(key){
+    delete memoryStore[key];
+    return { key, deleted: true, shared: false };
+  },
+  async list(prefix=''){
+    const keys = Object.keys(memoryStore).filter(k => k.startsWith(prefix));
+    return { keys, prefix, shared: false };
+  }
+};
+
+const localFallback = {
+  async get(key){
+    const v = localStorage.getItem(key);
+    if(v === null) throw new Error('not found');
+    return { key, value: v, shared: false };
+  },
+  async set(key, value){
+    localStorage.setItem(key, value);
+    return { key, value, shared: false };
+  },
+  async delete(key){
+    localStorage.removeItem(key);
+    return { key, deleted: true, shared: false };
+  },
+  async list(prefix=''){
+    const keys = Object.keys(localStorage).filter(k => k.startsWith(prefix));
+    return { keys, prefix, shared: false };
+  }
+};
+const usingClaudeStorage = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
+const baseStore = usingClaudeStorage ? window.storage : (localStorageAvailable ? localFallback : memoryFallback);
+
+/* ---------------- BACKEND GOOGLE SHEETS (opsional, penyimpanan cloud) ----------------
+   Isi APPS_SCRIPT_URL di bawah dengan URL "Web app" hasil deploy Apps Script
+   (lihat file AppsScript_Backend_PJP.gs.txt). Kalau masih kosong / belum diisi,
+   aplikasi otomatis kembali memakai penyimpanan lokal browser saja seperti biasa
+   -- tidak ada yang rusak.
+   Sheet sumber: https://docs.google.com/spreadsheets/d/1xTPHsw-FUVysZggtWU5H0MEJFA6nqINBUIqjRTJqnFQ/edit
+*/
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLT-nlcMVLu4mUO71subQaa-bcqbUIE41okJeGbTMW2-jnPp4Q7eCcKdCsHXP1D-4LTQ/exec'; // <-- tempel URL Web App di antara tanda kutip ini
+const sheetsEnabled = !!(APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf('https://script.google.com/') === 0);
+
+async function sheetSet(key, value){
+  await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight
+    body: JSON.stringify({ key, value })
+  });
+}
+
+async function pullAllFromSheet(){
+  if(!sheetsEnabled) return;
+  try{
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'GET', signal: controller.signal });
+    clearTimeout(timeoutId);
+    if(!res.ok) return;
+    const all = await res.json();
+    for(const k in all){
+      const v = all[k];
+      if(v !== null && v !== undefined && v !== ''){
+        await baseStore.set(k, v);
+      }
+    }
+  }catch(e){ console.error('Gagal mengambil data dari Google Sheet (timeout/offline), pakai data lokal', e); }
+}
+
+// store = lapisan yang dipakai di seluruh aplikasi. Baca tetap dari cache lokal
+// (cepat, tidak nunggu jaringan). Tulis disimpan lokal dulu (instan), lalu
+// dikirim juga ke Google Sheet di background supaya data ikut tersimpan permanen
+// di sheet dan bisa dipakai lintas perangkat/browser.
+const store = {
+  async get(key){ return baseStore.get(key); },
+  async set(key, value){
+    const r = await baseStore.set(key, value);
+    if(sheetsEnabled){
+      sheetSet(key, value).catch(e => console.error('Gagal sync ke Google Sheet:', key, e));
+    }
+    return r;
+  },
+  async delete(key){ return baseStore.delete(key); },
+  async list(prefix){ return baseStore.list(prefix); }
+};
+
+// Tampilkan banner peringatan kalau tidak ada penyimpanan permanen yang bisa dipakai,
+// supaya user TAHU datanya tidak akan tersimpan (bukan silent fail di console saja).
+function showStorageWarningBanner(){
+  const banner = document.createElement('div');
+  banner.id = 'storageWarningBanner';
+  banner.style.cssText = 'position:sticky;top:0;z-index:9999;background:#fef3c7;color:#92400e;'
+    + 'padding:10px 16px;font-size:13px;font-weight:600;text-align:center;'
+    + 'border-bottom:2px solid #f59e0b;box-shadow:0 2px 6px rgba(0,0,0,.08);';
+  banner.innerHTML = '⚠️ Penyimpanan permanen tidak tersedia di mode ini (localStorage diblokir browser). '
+    + 'Data yang diinput <u>TIDAK akan tersimpan</u> setelah tab ditutup/refresh. '
+    + 'Solusi: buka file ini via server/hosting (mis. GitHub Pages), jangan dobel-klik file HTML langsung. '
+    + '<span style="cursor:pointer;text-decoration:underline;margin-left:8px;" onclick="this.parentElement.remove()">Tutup</span>';
+  document.body.insertBefore(banner, document.body.firstChild);
+}
+if(!usingClaudeStorage && !localStorageAvailable){
+  document.addEventListener('DOMContentLoaded', showStorageWarningBanner);
+}
+
+function todayStr(){
+  const d = new Date();
+  const tz = d.getTimezoneOffset() * 60000;
+  return new Date(d - tz).toISOString().slice(0,10);
+}
+
+/* ---------------- EDITABLE LABELS (judul, subjudul, link, catatan, label form) ---------------- */
+const EDITABLE_LABELS_KEY = 'app:editableLabels';
+let editableLabels = {};
+
+async function loadEditableLabels(){
+  try{
+    const res = await store.get(EDITABLE_LABELS_KEY);
+    editableLabels = (res && res.value) ? JSON.parse(res.value) : {};
+  }catch(e){ editableLabels = {}; }
+  document.querySelectorAll('[data-label-key]').forEach(el => {
+    const key = el.dataset.labelKey;
+    if(editableLabels[key] !== undefined){
+      el.textContent = editableLabels[key];
+    }
+  });
+  syncDocumentTitle();
+}
+
+// Judul tab browser (document.title) mengikuti judul header (H1) secara otomatis.
+function syncDocumentTitle(){
+  const h1 = document.querySelector('[data-label-key="headerTitle"]');
+  if(!h1) return;
+  const cleanTitle = h1.textContent.replace(/[\u{1F300}-\u{1FAFF}\u{2600}-\u{27BF}]/gu, '').trim();
+  document.title = cleanTitle || 'Sistem Evaluasi dan Penilaian Jasa Pertambangan';
+}
+
+let labelSaveTimer = null;
+function scheduleLabelSave(){ clearTimeout(labelSaveTimer); labelSaveTimer = setTimeout(saveEditableLabels, 500); }
+async function saveEditableLabels(){
+  try{ await store.set(EDITABLE_LABELS_KEY, JSON.stringify(editableLabels)); }
+  catch(e){ console.error('Gagal menyimpan perubahan teks', e); }
+}
+
+document.querySelectorAll('[data-label-key]').forEach(el => {
+  el.addEventListener('input', () => {
+    editableLabels[el.dataset.labelKey] = el.textContent;
+    scheduleLabelSave();
+    if(el.dataset.labelKey === 'headerTitle') syncDocumentTitle();
+  });
+  el.addEventListener('blur', () => {
+    // rapikan spasi/enter liar dari contenteditable
+    el.textContent = el.textContent.replace(/\s+/g, ' ').trim();
+    editableLabels[el.dataset.labelKey] = el.textContent;
+    scheduleLabelSave();
+    if(el.dataset.labelKey === 'headerTitle') syncDocumentTitle();
+  });
+});
+
+/* ---------------- EDITABLE VENDOR TAB NAMES ---------------- */
+// Nama tampilan tombol vendor bisa diedit langsung, TANPA mengubah key data asli
+// (skor, sync Google Sheets, override aspek, dsb tetap memakai nama baku vendor).
+const VENDOR_LABEL_KEY = 'app:vendorLabels';
+let vendorLabels = {};
+
+async function loadVendorLabels(){
+  try{
+    const res = await store.get(VENDOR_LABEL_KEY);
+    vendorLabels = (res && res.value) ? JSON.parse(res.value) : {};
+  }catch(e){ vendorLabels = {}; }
+}
+function vendorDisplay(key){ return vendorLabels[key] || key; }
+
+let vendorLabelSaveTimer = null;
+function scheduleVendorLabelSave(){ clearTimeout(vendorLabelSaveTimer); vendorLabelSaveTimer = setTimeout(saveVendorLabels, 500); }
+async function saveVendorLabels(){
+  try{ await store.set(VENDOR_LABEL_KEY, JSON.stringify(vendorLabels)); }
+  catch(e){ console.error('Gagal menyimpan nama vendor', e); }
+}
+
+// Pasang listener edit pada setiap span.vt-label (dipanggil ulang tiap render tab vendor).
+function bindVendorLabelEditing(container){
+  container.querySelectorAll('.vt-label').forEach(span => {
+    span.addEventListener('click', (e) => { e.stopPropagation(); });
+    span.addEventListener('input', () => {
+      vendorLabels[span.dataset.vkey] = span.textContent;
+      scheduleVendorLabelSave();
+    });
+    span.addEventListener('blur', () => {
+      let clean = span.textContent.replace(/\s+/g, ' ').trim();
+      if(!clean) clean = span.dataset.vkey; // jangan biarkan kosong
+      span.textContent = clean;
+      vendorLabels[span.dataset.vkey] = clean;
+      scheduleVendorLabelSave();
+      if(skNamaPjpEl) skNamaPjpEl.value = vendorDisplay(skVendor);
+      renderNcVendorSelectOptions();
+    });
+    span.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter'){ e.preventDefault(); span.blur(); }
+    });
+  });
+}
+const skNamaPjpEl = document.getElementById('skNamaPjp');
+
+/* ---------------- TANGGAL PENILAIAN PJP BERIKUTNYA (per vendor, editable) ---------------- */
+const SK_NEXT_DATE_KEY = 'app:skNextDate';
+const SK_NEXT_DATE_SEED = {
+  "Minergo Visi Maxima": "15 Agustus 2026",
+  "Visi Global Technology": "30 Agustus 2026",
+  "Vixmo Transportasi Cerdas": "05 September 2026",
+  "Bening Guru Semesta": "Masih belum ada jadwal",
+  "Lintech Duta Pratama": "08 Agustus 2026"
+};
+let skNextDates = {};
+
+async function loadSkNextDates(){
+  let needsResave = false;
+  try{
+    const res = await store.get(SK_NEXT_DATE_KEY);
+    const saved = (res && res.value) ? JSON.parse(res.value) : {};
+    skNextDates = Object.assign({}, SK_NEXT_DATE_SEED);
+    for(const vendorKey in saved){
+      const trimmed = (saved[vendorKey] || '').trim();
+      if(trimmed){
+        skNextDates[vendorKey] = saved[vendorKey];
+      } else if(vendorKey in saved){
+        // Ada entri kosong/spasi tersimpan yang menutupi jadwal default (seed).
+        // Ini dibersihkan otomatis supaya jadwal default kembali muncul.
+        needsResave = true;
+      }
+    }
+  }catch(e){ skNextDates = Object.assign({}, SK_NEXT_DATE_SEED); }
+  if(needsResave) saveSkNextDates();
+}
+
+let skNextDateSaveTimer = null;
+function scheduleSkNextDateSave(){ clearTimeout(skNextDateSaveTimer); skNextDateSaveTimer = setTimeout(saveSkNextDates, 500); }
+async function saveSkNextDates(){
+  try{ await store.set(SK_NEXT_DATE_KEY, JSON.stringify(skNextDates)); }
+  catch(e){ console.error('Gagal menyimpan tanggal penilaian berikutnya', e); }
+}
+
+function renderSkNextDate(){
+  const el = document.getElementById('skNextDate');
+  if(!el) return;
+  el.value = skNextDates[skVendor] || '';
+}
+
+const skNextDateEl = document.getElementById('skNextDate');
+if(skNextDateEl){
+  skNextDateEl.addEventListener('input', () => {
+    skNextDates[skVendor] = skNextDateEl.value;
+    scheduleSkNextDateSave();
+  });
+  skNextDateEl.addEventListener('blur', () => {
+    const clean = skNextDateEl.value.replace(/\s+/g, ' ').trim();
+    skNextDateEl.value = clean;
+    skNextDates[skVendor] = clean;
+    clearTimeout(skNextDateSaveTimer);
+    saveSkNextDates();
+  });
+  skNextDateEl.addEventListener('keydown', (e) => {
+    if(e.key === 'Enter'){ e.preventDefault(); skNextDateEl.blur(); }
+  });
+}
+
+function renderNcVendorSelectOptions(){
+  const sel = document.getElementById('ncVendor');
+  if(!sel) return;
+  const prev = sel.value;
+  sel.innerHTML = NC_VENDORS.map(v => `<option value="${v}">${vendorDisplay(v)}</option>`).join('');
+  if(NC_VENDORS.includes(prev)) sel.value = prev;
+}
+
+// Link "Buka Spreadsheet Sumber Data" klik langsung membuka spreadsheet (perilaku normal).
+// Untuk mengubah teksnya, gunakan tombol ✏️ di sampingnya (mode edit sementara).
+const headerSheetLink = document.getElementById('headerSheetLink');
+const sheetLinkEditBtn = document.getElementById('sheetLinkEditBtn');
+if(headerSheetLink && sheetLinkEditBtn){
+  sheetLinkEditBtn.addEventListener('click', () => {
+    const editing = headerSheetLink.getAttribute('contenteditable') === 'true';
+    if(editing){
+      headerSheetLink.removeAttribute('contenteditable');
+      sheetLinkEditBtn.classList.remove('active');
+      sheetLinkEditBtn.textContent = '✏️';
+      editableLabels['sheetLinkText'] = headerSheetLink.textContent.replace(/\s+/g, ' ').trim();
+      headerSheetLink.textContent = editableLabels['sheetLinkText'];
+      scheduleLabelSave();
+    }else{
+      headerSheetLink.setAttribute('contenteditable', 'true');
+      sheetLinkEditBtn.classList.add('active');
+      sheetLinkEditBtn.textContent = '✓';
+      headerSheetLink.focus();
+    }
+  });
+  headerSheetLink.addEventListener('click', (e) => {
+    if(headerSheetLink.getAttribute('contenteditable') === 'true') e.preventDefault();
+  });
+}
+
+/* ---------------- TAB SWITCHING ---------------- */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.onclick = () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + tab.dataset.view).classList.add('active');
+    if(tab.dataset.view === 'ncpjp') renderNcPjp();
+    if(tab.dataset.view === 'summarykinerja') renderSummaryKinerja();
+  };
+});
+
+/* ================= NC PEMENUHAN PJP ENGINE ================= */
+const NC_STATUS = ["Open","Onprogress","Hold","Close"];
+const NC_VENDORS = ["Minergo Visi Maxima","Visi Global Technology","Vixmo Transportasi Cerdas","Bening Guru Semesta","Lintech Duta Pratama"];
+const NC_KEY = 'ncpjp:list';
+let ncItems = [];
+let ncFilterStatus = 'All';
+let ncFilterVendor = 'All';
+
+function ncId(){ return 'nc' + Date.now() + Math.floor(Math.random()*1000); }
+
+async function loadNcPjp(){
+  try{
+    const res = await store.get(NC_KEY);
+    ncItems = (res && res.value) ? JSON.parse(res.value) : [];
+  }catch(e){ ncItems = []; }
+}
+async function saveNcPjp(){
+  try{ await store.set(NC_KEY, JSON.stringify(ncItems)); }
+  catch(e){
+    console.error('Gagal menyimpan NC PJP', e);
+    alert('Gagal menyimpan data NC PJP ke penyimpanan. Data hanya tampil sementara di layar dan TIDAK tersimpan permanen.\n\nDetail: ' + e.message);
+  }
+}
+
+document.getElementById('ncAddBtn').onclick = async () => {
+  const temuan = document.getElementById('ncTemuan').value.trim();
+  if(!temuan){ alert('Temuan / Ketidaksesuaian (NC) wajib diisi.'); return; }
+  const item = {
+    id: ncId(),
+    date: todayStr(),
+    vendor: document.getElementById('ncVendor').value,
+    aspek: document.getElementById('ncAspek').value,
+    temuan,
+    rencana: document.getElementById('ncRencana').value.trim(),
+    pic: document.getElementById('ncPic').value.trim(),
+    due: document.getElementById('ncDue').value,
+    status: document.getElementById('ncStatus').value
+  };
+  ncItems.unshift(item);
+  await saveNcPjp();
+  document.getElementById('ncTemuan').value = '';
+  document.getElementById('ncRencana').value = '';
+  document.getElementById('ncPic').value = '';
+  document.getElementById('ncDue').value = '';
+  document.getElementById('ncStatus').value = 'Open';
+  renderNcPjp();
+};
+
+function renderNcVendorFilterBar(){
+  const el = document.getElementById('ncVendorFilterBar');
+  const opts = ['All', ...NC_VENDORS];
+  el.innerHTML = opts.map(v => v === 'All'
+    ? `<button data-v="All" class="${ncFilterVendor==='All'?'active':''}">Semua Vendor</button>`
+    : `<button data-v="${v}" class="${ncFilterVendor===v?'active':''}"><span class="vt-label" contenteditable="true" spellcheck="false" data-vkey="${v}">${vendorDisplay(v)}</span></button>`
+  ).join('');
+  el.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      if(e.target.classList.contains('vt-label') && document.activeElement === e.target) return;
+      ncFilterVendor = btn.dataset.v; renderNcPjp();
+    });
+  });
+  bindVendorLabelEditing(el);
+}
+
+function renderNcSummary(){
+  const counts = {}; NC_STATUS.forEach(s=>counts[s]=0);
+  const filtered = ncFilterVendor === 'All' ? ncItems : ncItems.filter(i => i.vendor === ncFilterVendor);
+  filtered.forEach(it => { if(counts[it.status] !== undefined) counts[it.status]++; });
+  const html = NC_STATUS.map(s => `<div class="card"><div class="num">${counts[s]}</div><div class="lab">${s}</div></div>`).join('')
+    + `<div class="card"><div class="num">${filtered.length}</div><div class="lab">Total</div></div>`;
+  document.getElementById('ncSummaryCards').innerHTML = html;
+}
+
+function renderNcFilterBar(){
+  const bar = document.getElementById('ncFilterBar');
+  const opts = ['All', ...NC_STATUS];
+  bar.innerHTML = opts.map(o => `<button class="fu-filter ${ncFilterStatus===o?'active':''}" data-f="${o}">${o === 'All' ? 'Semua Status' : o}</button>`).join('');
+  bar.querySelectorAll('.fu-filter').forEach(btn => {
+    btn.onclick = () => { ncFilterStatus = btn.dataset.f; renderNcPjp(); };
+  });
+}
+
+function renderNcList(){
+  const el = document.getElementById('ncList');
+  let items = ncItems;
+  if(ncFilterVendor !== 'All') items = items.filter(it => it.vendor === ncFilterVendor);
+  if(ncFilterStatus !== 'All') items = items.filter(it => it.status === ncFilterStatus);
+  if(items.length === 0){
+    el.innerHTML = '<div class="empty-note">Belum ada item NC Pemenuhan PJP pada filter ini.</div>';
+    return;
+  }
+  el.innerHTML = items.map(it => `
+    <div class="fu-card status-${it.status}" data-id="${it.id}">
+      <div class="fu-top">
+        <div>
+          <div class="fu-desc">${vendorDisplay(it.vendor)} — ${it.aspek}</div>
+          <div class="fu-meta">${it.date}${it.pic ? ' · PIC: ' + it.pic : ''}${it.due ? ' · Due: ' + it.due : ''}</div>
+        </div>
+        <span class="fu-badge ${it.status}">${it.status}</span>
+      </div>
+      <div class="fu-note"><b>Temuan:</b> ${it.temuan}</div>
+      ${it.rencana ? `<div class="fu-note"><b>Rencana Pemenuhan:</b> ${it.rencana}</div>` : ''}
+      <div class="fu-actions">
+        <select data-id="${it.id}" class="nc-status-select">
+          ${NC_STATUS.map(s => `<option value="${s}" ${s===it.status?'selected':''}>${s}</option>`).join('')}
+        </select>
+        <button class="fu-del" data-id="${it.id}">Hapus</button>
+      </div>
+    </div>
+  `).join('');
+
+  el.querySelectorAll('.nc-status-select').forEach(sel => {
+    sel.onchange = async () => {
+      const item = ncItems.find(i => i.id === sel.dataset.id);
+      if(item){ item.status = sel.value; await saveNcPjp(); renderNcPjp(); }
+    };
+  });
+  el.querySelectorAll('.fu-del').forEach(btn => {
+    btn.onclick = async () => {
+      if(confirm('Hapus item NC PJP ini?')){
+        ncItems = ncItems.filter(i => i.id !== btn.dataset.id);
+        await saveNcPjp(); renderNcPjp();
+      }
+    };
+  });
+}
+
+async function renderNcPjp(){
+  await loadNcPjp();
+  renderNcVendorFilterBar();
+  renderNcSummary();
+  renderNcFilterBar();
+  renderNcList();
+}
+
+/* ================= SUMMARY KINERJA PJP ENGINE ================= */
+const SK_VENDORS = ["Minergo Visi Maxima","Visi Global Technology","Vixmo Transportasi Cerdas","Bening Guru Semesta","Lintech Duta Pratama"];
+const SK_ASPECTS = [
+  { no:1, name:"Aspek Teknis Operasional", bobot:0.15, max:100 },
+  { no:2, name:"Aspek Keselamatan Pertambangan", bobot:0.20, max:100 },
+  { no:3, name:"Aspek SMKP", bobot:0, max:0 },
+  { no:4, name:"Aspek Pengelolaan Lingkungan Hidup", bobot:0.15, max:100 },
+  { no:5, name:"Aspek Konservasi", bobot:0, max:0 },
+  { no:6, name:"Aspek Standarisasi Usaha Jasa", bobot:0.15, max:100 },
+  { no:7, name:"Aspek Improvement", bobot:0.10, max:100 },
+];
+// Beberapa vendor punya ruang lingkup penilaian yang berbeda dari default di atas.
+// Lintech Duta Pratama: Aspek SMKP aktif dinilai (bobot 15%), tidak N/A.
+const SK_ASPECT_OVERRIDES = {
+  "Lintech Duta Pratama": { 3: { bobot: 0.15, max: 100 } }
+};
+function getSkAspects(vendor){
+  const overrides = SK_ASPECT_OVERRIDES[vendor] || {};
+  return SK_ASPECTS.map(a => overrides[a.no] ? Object.assign({}, a, overrides[a.no]) : a);
+}
+let skVendor = SK_VENDORS[0];
+let skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
+
+/* ---- Seed Nilai per aspek dari hasil Rincian Status Pemenuhan (Checklist Sem I 2026) ---- */
+/* Nilai = (% item "Sudah" terhadap item non-N/A) x 100, dibulatkan 2 desimal. Dipakai hanya  */
+/* sebagai nilai awal saat belum ada data tersimpan untuk vendor tsb (tidak menimpa input manual). */
+const SK_SEED_NILAI = {
+  "Minergo Visi Maxima":    { 1:38.46, 2:70.00, 4:43.75, 6:31.25, 7:0.00 },
+  "Visi Global Technology": { 1:0.00,  2:0.00,  4:0.00,  6:9.38,  7:100.00 },
+  "Vixmo Transportasi Cerdas":    { 1:18.75, 2:9.20,  4:8.33,  6:41.38, 7:50.00 },
+  "Bening Guru Semesta":    { 1:0.00,  6:0.00 },
+  "Lintech Duta Pratama":   { 1:0.00,  2:0.00,  3:0.00,  4:0.00,  6:0.00,  7:0.00 },
+};
+
+/* ---- Rincian Status Pemenuhan per Aspek per Mitra ---- */
+/* Pengisian dilakukan manual langsung dari tabel (input Sudah/Proses/Belum/N/A per aspek). */
+/* RINCIAN_DATA_DEFAULT hanya dipakai sebagai nilai awal saat belum ada data tersimpan utk mitra tsb. */
+const RINCIAN_ASPEK_LABELS = ["Teknis Operasional","Keselamatan Pertambangan (K3)","SMKP","Lingkungan Hidup","Konservasi","Standarisasi Usaha Jasa","Improvement"];
+const RINCIAN_DATA_DEFAULT = {
+  "Minergo Visi Maxima": [
+    {sudah:5,proses:8,belum:0,na:0},
+    {sudah:35,proses:15,belum:0,na:0},
+    null,
+    {sudah:7,proses:1,belum:3,na:5},
+    null,
+    {sudah:10,proses:22,belum:0,na:0},
+    {sudah:0,proses:8,belum:0,na:0},
+  ],
+  "Visi Global Technology": [
+    {sudah:0,proses:0,belum:28,na:0},
+    {sudah:0,proses:0,belum:87,na:0},
+    null,
+    {sudah:0,proses:0,belum:24,na:0},
+    null,
+    {sudah:3,proses:1,belum:28,na:0},
+    {sudah:8,proses:0,belum:0,na:0},
+  ],
+  "Vixmo Transportasi Cerdas": [
+    {sudah:3,proses:10,belum:3,na:13},
+    {sudah:8,proses:42,belum:37,na:0},
+    null,
+    {sudah:2,proses:6,belum:16,na:0},
+    null,
+    {sudah:12,proses:5,belum:12,na:3},
+    {sudah:4,proses:3,belum:1,na:0},
+  ],
+  "Bening Guru Semesta": [
+    {sudah:0,proses:0,belum:28,na:0},
+    null,
+    null,
+    null,
+    null,
+    {sudah:0,proses:0,belum:32,na:0},
+    null,
+  ],
+  "Lintech Duta Pratama": [
+    {sudah:0,proses:15,belum:7,na:6},
+    {sudah:0,proses:51,belum:36,na:0},
+    {sudah:0,proses:4,belum:0,na:1},
+    {sudah:0,proses:10,belum:10,na:4},
+    null,
+    {sudah:0,proses:30,belum:2,na:0},
+    {sudah:0,proses:8,belum:0,na:0},
+  ],
+};
+
+const RC_KEY = 'rincianStatusPemenuhan';
+let rcData = {};
+let rcSaveTimer = null;
+
+function rcDeepCopyDefault(){
+  const copy = {};
+  SK_VENDORS.forEach(v => {
+    copy[v] = (RINCIAN_DATA_DEFAULT[v] || RINCIAN_ASPEK_LABELS.map(()=>null)).map(r => r ? Object.assign({}, r) : null);
+  });
+  return copy;
+}
+
+async function loadRcData(){
+  try{
+    const res = await store.get(RC_KEY);
+    rcData = (res && res.value) ? JSON.parse(res.value) : rcDeepCopyDefault();
+  }catch(e){
+    rcData = rcDeepCopyDefault();
+  }
+  // Pastikan semua mitra & aspek punya slot (jaga-jaga kalau vendor/aspek baru ditambahkan nanti)
+  SK_VENDORS.forEach(v => {
+    if(!rcData[v]) rcData[v] = RINCIAN_ASPEK_LABELS.map(()=>null);
+  });
+}
+
+async function saveRcData(){
+  try{ await store.set(RC_KEY, JSON.stringify(rcData)); }catch(e){ console.error('Gagal menyimpan Rincian Status Pemenuhan', e); }
+  const el = document.getElementById('rcSaveStatus');
+  if(el){
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    el.textContent = `Tersimpan pukul ${hh}:${mm}`;
+  }
+}
+function scheduleRcSave(){ clearTimeout(rcSaveTimer); rcSaveTimer = setTimeout(saveRcData, 500); }
+
+// Override khusus tampilan Rincian Status Pemenuhan (TIDAK mengubah bobot/ruang lingkup aspek
+// penilaian di Summary Kinerja PJP — hanya menyembunyikan kolom input di tabel ini menjadi
+// "N/A — di luar ruang lingkup" karena belum ada data checklist untuk aspek tsb).
+// Index aspek 0-based: 0 Teknis, 1 K3, 2 SMKP, 3 Lingkungan, 4 Konservasi, 5 Standarisasi, 6 Improvement.
+const RC_MANUAL_NA = {
+  "Bening Guru Semesta": [1, 3, 6]
+};
+
+function rcIsInScope(vendor, aspekIndex){
+  // aspekIndex 0-based -> aspek no 1-based sesuai SK_ASPECTS/override
+  const aspects = getSkAspects(vendor);
+  const a = aspects[aspekIndex];
+  if(!a || a.max <= 0) return false;
+  const manualNa = RC_MANUAL_NA[vendor];
+  if(manualNa && manualNa.includes(aspekIndex)) return false;
+  return true;
+}
+
+function renderRincian(){
+  const el = document.getElementById('rcContainer');
+  if(!el) return;
+  el.innerHTML = SK_VENDORS.map(vendor => {
+    const rows = rcData[vendor] || RINCIAN_ASPEK_LABELS.map(()=>null);
+    const bodyRows = rows.map((r, i) => {
+      if(!rcIsInScope(vendor, i)){
+        return `<tr><td class="rc-aspek">${RINCIAN_ASPEK_LABELS[i]}</td><td class="rc-na" colspan="4">N/A — di luar ruang lingkup</td></tr>`;
+      }
+      const v = r || {sudah:0,proses:0,belum:0,na:0};
+      const mk = (field) => `<input type="number" min="0" step="1" class="rc-input ${field}" data-vendor="${vendor}" data-aspek="${i}" data-field="${field}" value="${v[field]}">`;
+      return `<tr>
+        <td class="rc-aspek">${RINCIAN_ASPEK_LABELS[i]}</td>
+        <td>${mk('sudah')}</td>
+        <td>${mk('proses')}</td>
+        <td>${mk('belum')}</td>
+        <td>${mk('na')}</td>
+      </tr>`;
+    }).join('');
+    const totals = rows.reduce((acc, r, i) => {
+      if(rcIsInScope(vendor, i) && r){ acc.sudah+=(r.sudah||0); acc.proses+=(r.proses||0); acc.belum+=(r.belum||0); acc.na+=(r.na||0); }
+      return acc;
+    }, {sudah:0,proses:0,belum:0,na:0});
+    return `<div class="rc-vendor-block">
+      <div class="rc-vendor-head" data-vendor="${vendor}"><span>${vendorDisplay(vendor)}</span><button type="button" class="rc-sync-btn" data-vendor="${vendor}">🔄 Sync</button></div>
+      <table class="rc-table">
+        <thead><tr><th style="text-align:left;">Aspek Penilaian</th><th>Sudah</th><th>Dalam Proses</th><th>Belum</th><th>N/A</th></tr></thead>
+        <tbody>${bodyRows}
+          <tr class="rc-total-row" data-vendor-total="${vendor}"><td class="rc-aspek">Total</td><td class="rc-tot-sudah">${totals.sudah}</td><td class="rc-tot-proses">${totals.proses}</td><td class="rc-tot-belum">${totals.belum}</td><td class="rc-tot-na">${totals.na}</td></tr>
+        </tbody>
+      </table>
+    </div>`;
+  }).join('');
+
+  el.querySelectorAll('.rc-input').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const vendor = inp.dataset.vendor;
+      const aspekIdx = Number(inp.dataset.aspek);
+      const field = inp.dataset.field;
+      const val = Math.max(0, parseInt(inp.value, 10) || 0);
+      if(!rcData[vendor]) rcData[vendor] = RINCIAN_ASPEK_LABELS.map(()=>null);
+      if(!rcData[vendor][aspekIdx]) rcData[vendor][aspekIdx] = {sudah:0,proses:0,belum:0,na:0};
+      rcData[vendor][aspekIdx][field] = val;
+      rcUpdateVendorTotal(vendor);
+      scheduleRcSave();
+    });
+  });
+
+  el.querySelectorAll('.rc-sync-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const vendor = btn.dataset.vendor;
+      const original = btn.textContent;
+      btn.disabled = true; btn.textContent = '...';
+      try{
+        const n = await rcSyncVendorFromSheet(vendor);
+        btn.textContent = n > 0 ? `✓ ${n} update` : '✓ Sesuai';
+      }catch(err){
+        btn.textContent = '⚠ Gagal';
+        console.error('Gagal sync Rincian manual:', vendor, err);
+      }
+      setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1800);
+    });
+  });
+
+  rcRenderUpdateIndicators();
+}
+
+function rcUpdateVendorTotal(vendor){
+  const rows = rcData[vendor] || [];
+  const totals = rows.reduce((acc, r, i) => {
+    if(rcIsInScope(vendor, i) && r){ acc.sudah+=(r.sudah||0); acc.proses+=(r.proses||0); acc.belum+=(r.belum||0); acc.na+=(r.na||0); }
+    return acc;
+  }, {sudah:0,proses:0,belum:0,na:0});
+  const row = document.querySelector(`.rc-total-row[data-vendor-total="${vendor}"]`);
+  if(!row) return;
+  row.querySelector('.rc-tot-sudah').textContent = totals.sudah;
+  row.querySelector('.rc-tot-proses').textContent = totals.proses;
+  row.querySelector('.rc-tot-belum').textContent = totals.belum;
+  row.querySelector('.rc-tot-na').textContent = totals.na;
+}
+
+/* ---- Rincian Status Pemenuhan: deteksi perubahan otomatis dari Spreadsheet ----
+   Membaca baris-baris item checklist per aspek (bukan tabel ringkasan Nilai Awal yang
+   dipakai Summary Kinerja), lalu menghitung ulang jumlah Sudah/Dalam Proses/Belum/N/A
+   per aspek dari kolom "Status Pemenuhan". Hasilnya dibandingkan dengan rcData yang
+   tersimpan -- kalau beda, tampilkan badge/dot/toast (TIDAK menimpa data otomatis). */
+const RC_ASPECT_MATCH = ["Teknis Operasional","Keselamatan Pertambangan","SMKP","Lingkungan Hidup","Konservasi","Standarisasi Usaha","Improvement"];
+function rcMatchAspectIndex(text){
+  const t = String(text || '').toLowerCase();
+  for(let i = 0; i < RC_ASPECT_MATCH.length; i++){
+    if(t.indexOf(RC_ASPECT_MATCH[i].toLowerCase()) !== -1) return i;
+  }
+  return -1;
+}
+function rcClassifyStatus(raw){
+  const s = String(raw || '').trim().toLowerCase();
+  if(s === 'sudah') return 'sudah';
+  if(s.indexOf('proses') !== -1) return 'proses';
+  if(s === 'belum') return 'belum';
+  return 'na';
+}
+async function rcFetchSheetCounts(vendorName){
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const raw = await res.text();
+  const match = raw.match(/setResponse\(([\s\S]*)\);?\s*$/);
+  if(!match) throw new Error('Format respons tidak dikenali');
+  const json = JSON.parse(match[1]);
+  if(json.status === 'error'){
+    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || 'Sheet/tab tidak ditemukan';
+    throw new Error(msg);
+  }
+  const rows = (json.table && json.table.rows) || [];
+  const counts = RINCIAN_ASPEK_LABELS.map(() => null);
+  let currentIdx = -1;
+  rows.forEach(row => {
+    const cells = row.c || [];
+    const bCell = cells[1]; // kolom B: judul section "N. Aspek ..." atau "No" item
+    if(bCell && typeof bCell.v === 'string' && /aspek/i.test(bCell.v) && !/^progress/i.test(bCell.v)){
+      const idx = rcMatchAspectIndex(bCell.v);
+      if(idx !== -1){ currentIdx = idx; if(!counts[idx]) counts[idx] = {sudah:0,proses:0,belum:0,na:0}; }
+      return;
+    }
+    if(currentIdx === -1) return;
+    const nilaiCell = cells[4]; // kolom E: Nilai Max -- penanda baris item checklist
+    if(!nilaiCell || typeof nilaiCell.v !== 'number') return;
+    const statusCell = cells[5]; // kolom F: Status Pemenuhan
+    const cls = rcClassifyStatus(statusCell ? statusCell.v : '');
+    counts[currentIdx][cls]++;
+  });
+  return counts;
+}
+function rcCountDiff(vendor, freshCounts){
+  let diff = 0;
+  freshCounts.forEach((fresh, i) => {
+    if(!fresh || !rcIsInScope(vendor, i)) return;
+    const stored = (rcData[vendor] && rcData[vendor][i]) || {sudah:0,proses:0,belum:0,na:0};
+    if(stored.sudah !== fresh.sudah || stored.proses !== fresh.proses || stored.belum !== fresh.belum || stored.na !== fresh.na) diff++;
+  });
+  return diff;
+}
+const RC_CHECK_INTERVAL_MS = 90000; // sama seperti Summary Kinerja, cek berkala tiap 90 detik
+let rcPendingUpdates = {}; // { namaVendor: jumlah aspek berubah }
+let rcFreshCache = {}; // cache hasil fetch terakhir per vendor supaya klik "Sync" tidak fetch ulang
+let rcToastDismissedFor = new Set();
+let rcCheckTimer = null;
+
+async function rcCheckVendorForUpdate(vendor){
+  try{
+    const fresh = await rcFetchSheetCounts(vendor);
+    rcFreshCache[vendor] = fresh;
+    const diff = rcCountDiff(vendor, fresh);
+    if(diff > 0) rcPendingUpdates[vendor] = diff; else delete rcPendingUpdates[vendor];
+  }catch(e){
+    // Cek diam-diam saja kalau gagal (sheet belum bisa diakses/offline) -- tidak mengganggu tampilan.
+  }
+}
+async function rcCheckAllVendorsForUpdates(){
+  for(const vendor of SK_VENDORS){ await rcCheckVendorForUpdate(vendor); }
+  rcRenderUpdateIndicators();
+}
+function rcRenderUpdateIndicators(){
+  const vendorsWithUpdate = Object.keys(rcPendingUpdates);
+  const badge = document.getElementById('rcSyncBadge');
+  if(badge){
+    if(vendorsWithUpdate.length > 0){ badge.textContent = vendorsWithUpdate.length; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+  }
+  document.querySelectorAll('.rc-vendor-head').forEach(head => {
+    const vendor = head.dataset.vendor;
+    let dot = head.querySelector('.sk-vendor-dot');
+    if(!dot){ dot = document.createElement('span'); dot.className = 'sk-vendor-dot'; dot.style.cssText = 'position:absolute;top:-4px;right:-4px;'; head.style.overflow = 'visible'; head.appendChild(dot); }
+    if(rcPendingUpdates[vendor]) dot.classList.add('show'); else dot.classList.remove('show');
+  });
+  rcMaybeShowToast();
+}
+function rcMaybeShowToast(){
+  const toast = document.getElementById('rcUpdateToast');
+  if(!toast) return;
+  const target = Object.keys(rcPendingUpdates).find(v => !rcToastDismissedFor.has(v));
+  if(!target){ toast.classList.remove('show'); return; }
+  document.getElementById('rcToastBody').textContent =
+    `${vendorDisplay(target)} — ${rcPendingUpdates[target]} aspek berubah di checklist Status Pemenuhan. Data lokal belum ditimpa.`;
+  toast.dataset.vendor = target;
+  toast.classList.add('show');
+}
+async function rcApplyFreshToVendor(vendor, freshCounts){
+  let updated = 0;
+  if(!rcData[vendor]) rcData[vendor] = RINCIAN_ASPEK_LABELS.map(() => null);
+  freshCounts.forEach((fresh, i) => {
+    if(!fresh || !rcIsInScope(vendor, i)) return;
+    rcData[vendor][i] = Object.assign({}, fresh);
+    updated++;
+  });
+  if(updated > 0) await saveRcData();
+  return updated;
+}
+async function rcSyncVendorFromSheet(vendor){
+  const fresh = rcFreshCache[vendor] || await rcFetchSheetCounts(vendor);
+  const updated = await rcApplyFreshToVendor(vendor, fresh);
+  if(updated > 0) renderRincian();
+  delete rcPendingUpdates[vendor];
+  rcToastDismissedFor.delete(vendor);
+  rcRenderUpdateIndicators();
+  return updated;
+}
+document.getElementById('rcToastSyncBtn').onclick = async () => {
+  const toast = document.getElementById('rcUpdateToast');
+  const target = toast.dataset.vendor;
+  if(!target) return;
+  toast.classList.remove('show');
+  try{ await rcSyncVendorFromSheet(target); }
+  catch(e){ console.error('Gagal sync Rincian dari notifikasi', target, e); }
+};
+document.getElementById('rcToastDismissBtn').onclick = () => {
+  const toast = document.getElementById('rcUpdateToast');
+  if(toast.dataset.vendor) rcToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+  rcMaybeShowToast();
+};
+document.getElementById('rcToastCloseBtn').onclick = () => {
+  const toast = document.getElementById('rcUpdateToast');
+  if(toast.dataset.vendor) rcToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+};
+function rcStartAutoCheck(){
+  if(rcCheckTimer) clearInterval(rcCheckTimer);
+  rcCheckAllVendorsForUpdates();
+  rcCheckTimer = setInterval(rcCheckAllVendorsForUpdates, RC_CHECK_INTERVAL_MS);
+}
+
+/* ---- Google Sheets auto-sync ---- */
+const SK_SHEET_ID = '1cWBr2Vpcqi8wFp14yxKDLUypshZgN5q-';
+let skSyncing = false;
+
+function skSetSyncStatus(text, cls){
+  const el = document.getElementById('skSyncStatus');
+  if(!el) return;
+  el.textContent = text;
+  el.className = cls || '';
+}
+
+async function skFetchSheetProgress(vendorName){
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const raw = await res.text();
+  const match = raw.match(/setResponse\(([\s\S]*)\);?\s*$/);
+  if(!match) throw new Error('Format respons tidak dikenali');
+  const json = JSON.parse(match[1]);
+  if(json.status === 'error'){
+    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || 'Sheet/tab tidak ditemukan';
+    throw new Error(msg);
+  }
+  const rows = (json.table && json.table.rows) || [];
+  // Cari tabel ringkasan "Aspek Penilaian / Bobot Nilai / Nilai Awal" di bagian bawah sheet.
+  // Barisnya berbentuk: [ -, No, "Aspek ...", Bobot, Nilai Max, "Nilai Awal", Nilai Akhir, ... ]
+  const nilaiByAspect = {};
+  rows.forEach(row => {
+    const cells = row.c || [];
+    const noCell = cells[1];
+    const nameCell = cells[2];
+    const nilaiCell = cells[5];
+    if(!noCell || typeof noCell.v !== 'number') return;
+    if(!nameCell || typeof nameCell.v !== 'string' || !/^Aspek\s/i.test(nameCell.v)) return;
+    const no = Math.round(noCell.v);
+    if(no < 1 || no > 7) return;
+    if(!nilaiCell || nilaiCell.v === null || nilaiCell.v === undefined) return;
+    const rawVal = String(nilaiCell.v).trim();
+    if(rawVal === '' || rawVal.toUpperCase() === 'N/A' || rawVal === '-') return;
+    const num = parseFloat(rawVal);
+    if(isNaN(num)) return;
+    nilaiByAspect[no] = Math.round(num * 100) / 100;
+  });
+  return nilaiByAspect;
+}
+
+async function skSyncFromSheet(){
+  if(skSyncing) return;
+  skSyncing = true;
+  const btn = document.getElementById('skSyncBtn');
+  if(btn) btn.disabled = true;
+  skSetSyncStatus('🔄 Menyinkronkan dari Google Sheets...', 'loading');
+  try{
+    const progress = await skFetchSheetProgress(skVendor);
+    let updated = 0;
+    getSkAspects(skVendor).forEach(a => {
+      if(a.max === 0) return; // aspek N/A, lewati
+      if(progress[a.no] !== undefined){
+        skData.nilai[a.no] = progress[a.no];
+        updated++;
+      }
+    });
+    if(updated === 0){
+      skSetSyncStatus('⚠ Tidak ditemukan data Progress di tab spreadsheet ini.', 'err');
+    }else{
+      renderSkTable();
+      renderSkResult();
+      await saveSkData();
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      skSetSyncStatus(`✓ Tersinkron dari Spreadsheet (${updated} aspek) pukul ${hh}:${mm}`, 'ok');
+      delete skPendingUpdates[skVendor];
+      skToastDismissedFor.delete(skVendor);
+      skRenderUpdateIndicators();
+    }
+  }catch(e){
+    console.error('Gagal sync Google Sheets', e);
+    skSetSyncStatus('⚠ Gagal sinkronisasi otomatis. Periksa akses sheet (harus "Anyone with the link") atau koneksi internet. Nilai bisa diisi manual.', 'err');
+  }finally{
+    skSyncing = false;
+    if(btn) btn.disabled = false;
+  }
+}
+
+/* ---- Notifikasi pembaruan Spreadsheet (cek berkala, semua vendor tab) ---- */
+const SK_CHECK_INTERVAL_MS = 90000; // cek tiap 90 detik, tidak menimpa data — hanya notifikasi
+let skPendingUpdates = {}; // { namaVendor: jumlah aspek berubah }
+let skCheckTimer = null;
+let skToastDismissedFor = new Set();
+
+function skCountDiff(storedNilai, freshNilai, vendor){
+  let count = 0;
+  getSkAspects(vendor).forEach(a => {
+    if(a.max === 0) return;
+    if(freshNilai[a.no] === undefined) return;
+    const stored = storedNilai[a.no];
+    if(stored === undefined || Math.abs(Number(stored) - Number(freshNilai[a.no])) > 0.001) count++;
+  });
+  return count;
+}
+
+async function skCheckVendorForUpdate(vendor){
+  try{
+    const fresh = await skFetchSheetProgress(vendor);
+    const res = await store.get(skKeyFor(vendor));
+    const stored = (res && res.value) ? (JSON.parse(res.value).nilai || {}) : {};
+    const diff = skCountDiff(stored, fresh, vendor);
+    if(diff > 0) skPendingUpdates[vendor] = diff; else delete skPendingUpdates[vendor];
+  }catch(e){
+    // Cek background diam-diam saja kalau gagal (mis. sheet belum bisa diakses) — tidak mengganggu tombol sync manual.
+  }
+}
+
+async function skCheckAllVendorsForUpdates(){
+  for(const vendor of SK_VENDORS){ await skCheckVendorForUpdate(vendor); }
+  skRenderUpdateIndicators();
+}
+
+function skRenderUpdateIndicators(){
+  const vendorsWithUpdate = Object.keys(skPendingUpdates);
+  const badge = document.getElementById('skSyncBadge');
+  if(badge){
+    if(vendorsWithUpdate.length > 0){ badge.textContent = vendorsWithUpdate.length; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+  }
+  document.querySelectorAll('#skVendorTabs button').forEach(btn => {
+    let dot = btn.querySelector('.sk-vendor-dot');
+    if(!dot){ dot = document.createElement('span'); dot.className = 'sk-vendor-dot'; btn.appendChild(dot); }
+    if(skPendingUpdates[btn.dataset.v]) dot.classList.add('show'); else dot.classList.remove('show');
+  });
+  skMaybeShowToast();
+}
+
+function skMaybeShowToast(){
+  const toast = document.getElementById('skUpdateToast');
+  if(!toast) return;
+  let target = skPendingUpdates[skVendor] ? skVendor : Object.keys(skPendingUpdates).find(v => !skToastDismissedFor.has(v));
+  if(!target){ toast.classList.remove('show'); return; }
+  document.getElementById('skToastBody').textContent =
+    `${vendorDisplay(target)} — ${skPendingUpdates[target]} aspek berubah sejak sync terakhir. Data lokal belum ditimpa.`;
+  toast.dataset.vendor = target;
+  toast.classList.add('show');
+}
+
+async function skSyncVendorInBackground(vendor){
+  const fresh = await skFetchSheetProgress(vendor);
+  const res = await store.get(skKeyFor(vendor));
+  const data = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
+  let updated = 0;
+  getSkAspects(vendor).forEach(a => {
+    if(a.max === 0) return;
+    if(fresh[a.no] !== undefined){ data.nilai[a.no] = fresh[a.no]; updated++; }
+  });
+  if(updated > 0) await store.set(skKeyFor(vendor), JSON.stringify(data));
+}
+
+document.getElementById('skToastSyncBtn').onclick = async () => {
+  const toast = document.getElementById('skUpdateToast');
+  const target = toast.dataset.vendor;
+  if(!target) return;
+  toast.classList.remove('show');
+  try{
+    if(target === skVendor) await skSyncFromSheet();
+    else await skSyncVendorInBackground(target);
+  }catch(e){ console.error('Gagal sync dari notifikasi', target, e); }
+  delete skPendingUpdates[target];
+  skToastDismissedFor.delete(target);
+  skRenderUpdateIndicators();
+};
+document.getElementById('skToastDismissBtn').onclick = () => {
+  const toast = document.getElementById('skUpdateToast');
+  if(toast.dataset.vendor) skToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+  skMaybeShowToast();
+};
+document.getElementById('skToastCloseBtn').onclick = () => {
+  const toast = document.getElementById('skUpdateToast');
+  if(toast.dataset.vendor) skToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+};
+
+function skStartAutoCheck(){
+  if(skCheckTimer) clearInterval(skCheckTimer);
+  skCheckAllVendorsForUpdates();
+  skCheckTimer = setInterval(skCheckAllVendorsForUpdates, SK_CHECK_INTERVAL_MS);
+}
+
+function skKeyFor(vendor){ return 'summaryKinerja:' + vendor; }
+
+function skPredikat(nilai){
+  if(nilai > 90) return 'Emas';
+  if(nilai > 80) return 'Hijau';
+  if(nilai >= 65) return 'Biru';
+  if(nilai > 50) return 'Merah';
+  return 'Hitam';
+}
+
+function skComputeOverall(){
+  let sumWeighted = 0, sumBobot = 0;
+  getSkAspects(skVendor).forEach(a => {
+    if(a.max === 0) return; // Aspek N/A untuk vendor ini, di luar ruang lingkup
+    const v = skData.nilai[a.no];
+    if(v === undefined || v === null || v === '') return; // Aspek belum ada data -> N/A, tidak masuk perhitungan
+    const nilai = Number(v) || 0;
+    sumWeighted += a.bobot * nilai;
+    sumBobot += a.bobot;
+  });
+  return sumBobot > 0 ? Math.round((sumWeighted / sumBobot) * 100) / 100 : 0;
+}
+
+function renderSkVendorTabs(){
+  const el = document.getElementById('skVendorTabs');
+  el.innerHTML = SK_VENDORS.map(v => `<button data-v="${v}" class="${v===skVendor?'active':''}"><span class="vt-label" contenteditable="true" spellcheck="false" data-vkey="${v}">${vendorDisplay(v)}</span></button>`).join('');
+  el.querySelectorAll('button').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      if(e.target.classList.contains('vt-label') && document.activeElement === e.target) return;
+      skVendor = btn.dataset.v; await loadSkData(); renderSummaryKinerjaUI(); skSyncFromSheet();
+    });
+  });
+  bindVendorLabelEditing(el);
+  skRenderUpdateIndicators();
+}
+
+function renderSkTable(){
+  const tbody = document.getElementById('skTableBody');
+  const aspects = getSkAspects(skVendor);
+  tbody.innerHTML = aspects.map(a => {
+    const isNA = a.max === 0;
+    const nilai = skData.nilai[a.no] !== undefined ? skData.nilai[a.no] : '';
+    return `<tr>
+      <td>${a.no}</td>
+      <td class="sk-name">${a.name}${isNA ? ' (N/A)' : ''}</td>
+      <td>${Math.round(a.bobot*100)}%</td>
+      <td>${a.max}</td>
+      <td>${isNA ? '-' : `<input type="number" min="0" max="100" step="0.01" class="sk-nilai" data-no="${a.no}" value="${nilai}" placeholder="N/A">`}</td>
+      <td class="sk-akhir" data-no-akhir="${a.no}">${isNA ? '-' : (nilai !== '' ? Number(nilai).toFixed(2) : '-')}</td>
+    </tr>`;
+  }).join('') + `<tr><td colspan="2" class="sk-total">Total</td><td class="sk-total">${Math.round(aspects.reduce((s,a)=>s+a.bobot,0)*100)}%</td><td class="sk-total" colspan="3"></td></tr>`;
+
+  tbody.querySelectorAll('.sk-nilai').forEach(inp => {
+    inp.oninput = () => {
+      const no = inp.dataset.no;
+      const akhirCell = tbody.querySelector(`.sk-akhir[data-no-akhir="${no}"]`);
+      if(inp.value === ''){
+        delete skData.nilai[no]; // dikosongkan -> dianggap N/A, dikecualikan dari perhitungan
+        if(akhirCell) akhirCell.textContent = '-';
+      }else{
+        let v = Math.min(100, Math.max(0, Number(inp.value) || 0));
+        skData.nilai[no] = v;
+        if(akhirCell) akhirCell.textContent = v.toFixed(2);
+      }
+      renderSkResult();
+      scheduleSkSave();
+    };
+  });
+}
+
+function renderSkResult(){
+  const overall = skComputeOverall();
+  const predikat = skPredikat(overall);
+  document.getElementById('skOverallVal').textContent = overall.toFixed(2);
+  document.getElementById('skPredikatVal').innerHTML = `<span class="sk-predikat ${predikat}">${predikat.toUpperCase()}</span>`;
+}
+
+let skSaveTimer = null;
+function scheduleSkSave(){ clearTimeout(skSaveTimer); skSaveTimer = setTimeout(saveSkData, 500); }
+async function saveSkData(){
+  skData.semester = document.getElementById('skSemester').value;
+  skData.tahun = document.getElementById('skTahun').value;
+  skData.pjo = document.getElementById('skPjo').value;
+  try{ await store.set(skKeyFor(skVendor), JSON.stringify(skData)); }
+  catch(e){ console.error('Gagal menyimpan summary kinerja', e); }
+}
+async function loadSkData(){
+  try{
+    const res = await store.get(skKeyFor(skVendor));
+    skData = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
+  }catch(e){
+    skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
+  }
+  // Auto-seed dari SK_SEED_NILAI dimatikan atas permintaan — Nilai Awal Summary Kinerja PJP
+  // untuk seluruh mitra (MVM, VGT, VSC, BGS, LDP) diisi manual satu per satu.
+  if(!skData.nilai){
+    skData.nilai = {};
+  }
+}
+
+function renderSummaryKinerjaUI(){
+  document.getElementById('skNamaPjp').value = vendorDisplay(skVendor);
+  document.getElementById('skSemester').value = skData.semester || "I";
+  document.getElementById('skTahun').value = skData.tahun || 2026;
+  document.getElementById('skPjo').value = skData.pjo || "";
+  renderSkVendorTabs();
+  renderSkNextDate();
+  renderSkTable();
+  renderSkResult();
+}
+
+document.getElementById('skSemester').onchange = scheduleSkSave;
+document.getElementById('skTahun').oninput = scheduleSkSave;
+document.getElementById('skPjo').oninput = scheduleSkSave;
+document.getElementById('skSyncBtn').onclick = skSyncFromSheet;
+
+async function renderSummaryKinerja(){
+  await loadSkData();
+  renderSummaryKinerjaUI();
+  skSyncFromSheet();
+}
+
+/* ---------------- MIGRASI RENAME VENDOR ---------------- */
+/* "Vixmo Solusi Cerdas" -> "Vixmo Transportasi Cerdas" (nama tab Google Sheets & identitas vendor). */
+/* Memindahkan data lama (kalau ada) yang masih tersimpan dengan nama lama, supaya tidak hilang. */
+const VENDOR_RENAME_MAP = { "Vixmo Solusi Cerdas": "Vixmo Transportasi Cerdas" };
+async function migrateVendorRenames(){
+  for(const [oldName, newName] of Object.entries(VENDOR_RENAME_MAP)){
+    // 1) Summary Kinerja PJP per-vendor (skKeyFor)
+    try{
+      const oldKey = 'summaryKinerja:' + oldName;
+      const res = await store.get(oldKey);
+      if(res && res.value){
+        const newKey = 'summaryKinerja:' + newName;
+        let hasNew = false;
+        try{ const chk = await store.get(newKey); hasNew = !!(chk && chk.value); }catch(e){ hasNew = false; }
+        if(!hasNew){ await store.set(newKey, res.value); }
+        await store.delete(oldKey);
+      }
+    }catch(e){ /* tidak ada data lama, lewati */ }
+
+    // 2) Vendor Labels (app:vendorLabels)
+    try{
+      const res = await store.get(VENDOR_LABEL_KEY);
+      if(res && res.value){
+        const obj = JSON.parse(res.value);
+        if(obj[oldName] !== undefined){
+          if(obj[newName] === undefined) obj[newName] = obj[oldName];
+          delete obj[oldName];
+          await store.set(VENDOR_LABEL_KEY, JSON.stringify(obj));
+        }
+      }
+    }catch(e){}
+
+    // 3) Tanggal Penilaian Berikutnya (app:skNextDate)
+    try{
+      const res = await store.get(SK_NEXT_DATE_KEY);
+      if(res && res.value){
+        const obj = JSON.parse(res.value);
+        if(obj[oldName] !== undefined){
+          if(obj[newName] === undefined) obj[newName] = obj[oldName];
+          delete obj[oldName];
+          await store.set(SK_NEXT_DATE_KEY, JSON.stringify(obj));
+        }
+      }
+    }catch(e){}
+
+    // 4) Rincian Status Pemenuhan (rincianStatusPemenuhan)
+    try{
+      const res = await store.get(RC_KEY);
+      if(res && res.value){
+        const obj = JSON.parse(res.value);
+        if(obj[oldName] !== undefined){
+          if(obj[newName] === undefined) obj[newName] = obj[oldName];
+          delete obj[oldName];
+          await store.set(RC_KEY, JSON.stringify(obj));
+        }
+      }
+    }catch(e){}
+
+    // 5) NC Pemenuhan PJP (ncpjp:list) - update field vendor pada tiap item
+    try{
+      const res = await store.get(NC_KEY);
+      if(res && res.value){
+        const items = JSON.parse(res.value);
+        let changed = false;
+        items.forEach(it => { if(it.vendor === oldName){ it.vendor = newName; changed = true; } });
+        if(changed) await store.set(NC_KEY, JSON.stringify(items));
+      }
+    }catch(e){}
+  }
+}
+
+/* ---------------- INIT ---------------- */
+(async () => {
+  await pullAllFromSheet();
+  await migrateVendorRenames();
+  await loadVendorLabels();
+  await loadSkNextDates();
+  renderNcVendorSelectOptions();
+  loadEditableLabels();
+  await loadRcData();
+  renderRincian();
+  renderSummaryKinerja();
+  skStartAutoCheck();
+  rcStartAutoCheck();
+})();
+
+/* ---------------- FLUSH PENYIMPANAN SEBELUM REFRESH/TUTUP TAB ----------------
+   Semua penyimpanan di atas pakai debounce (delay 300-500ms) supaya tidak
+   menulis storage di setiap ketukan tombol. Masalahnya: kalau user refresh
+   atau menutup tab SEBELUM debounce selesai, perubahan terakhir bisa hilang.
+   Fungsi di bawah ini membatalkan timer debounce yang masih tertunda dan
+   langsung menjalankan fungsi simpan-nya begitu tab disembunyikan/ditutup,
+   supaya data terakhir yang diketik selalu ikut tersimpan. */
+function flushAllPendingSaves(){
+  try{
+    if(typeof labelSaveTimer !== 'undefined' && labelSaveTimer){ clearTimeout(labelSaveTimer); saveEditableLabels(); }
+  }catch(e){}
+  try{
+    if(typeof vendorLabelSaveTimer !== 'undefined' && vendorLabelSaveTimer){ clearTimeout(vendorLabelSaveTimer); saveVendorLabels(); }
+  }catch(e){}
+  try{
+    if(typeof skNextDateSaveTimer !== 'undefined' && skNextDateSaveTimer){ clearTimeout(skNextDateSaveTimer); saveSkNextDates(); }
+  }catch(e){}
+  try{
+    if(typeof rcSaveTimer !== 'undefined' && rcSaveTimer){ clearTimeout(rcSaveTimer); saveRcData(); }
+  }catch(e){}
+  try{
+    if(typeof skSaveTimer !== 'undefined' && skSaveTimer){ clearTimeout(skSaveTimer); saveSkData(); }
+  }catch(e){}
+}
+document.addEventListener('visibilitychange', () => {
+  if(document.visibilityState === 'hidden') flushAllPendingSaves();
+});
+window.addEventListener('pagehide', flushAllPendingSaves);
+window.addEventListener('beforeunload', flushAllPendingSaves);
+</script>
+</body>
+</html>
