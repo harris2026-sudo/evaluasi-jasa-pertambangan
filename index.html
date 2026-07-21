@@ -456,7 +456,57 @@ const localFallback = {
   }
 };
 const usingClaudeStorage = (typeof window.storage !== 'undefined' && typeof window.storage.get === 'function');
-const store = usingClaudeStorage ? window.storage : (localStorageAvailable ? localFallback : memoryFallback);
+const baseStore = usingClaudeStorage ? window.storage : (localStorageAvailable ? localFallback : memoryFallback);
+
+/* ---------------- BACKEND GOOGLE SHEETS (opsional, penyimpanan cloud) ----------------
+   Isi APPS_SCRIPT_URL di bawah dengan URL "Web app" hasil deploy Apps Script
+   (lihat file AppsScript_Backend_PJP.gs.txt). Kalau masih kosong / belum diisi,
+   aplikasi otomatis kembali memakai penyimpanan lokal browser saja seperti biasa
+   -- tidak ada yang rusak.
+   Sheet sumber: https://docs.google.com/spreadsheets/d/1xTPHsw-FUVysZggtWU5H0MEJFA6nqINBUIqjRTJqnFQ/edit
+*/
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxLT-nlcMVLu4mUO71subQaa-bcqbUIE41okJeGbTMW2-jnPp4Q7eCcKdCsHXP1D-4LTQ/exec'; // <-- tempel URL Web App di antara tanda kutip ini
+const sheetsEnabled = !!(APPS_SCRIPT_URL && APPS_SCRIPT_URL.indexOf('https://script.google.com/') === 0);
+
+async function sheetSet(key, value){
+  await fetch(APPS_SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // hindari CORS preflight
+    body: JSON.stringify({ key, value })
+  });
+}
+
+async function pullAllFromSheet(){
+  if(!sheetsEnabled) return;
+  try{
+    const res = await fetch(APPS_SCRIPT_URL, { method: 'GET' });
+    if(!res.ok) return;
+    const all = await res.json();
+    for(const k in all){
+      const v = all[k];
+      if(v !== null && v !== undefined && v !== ''){
+        await baseStore.set(k, v);
+      }
+    }
+  }catch(e){ console.error('Gagal mengambil data dari Google Sheet, pakai data lokal', e); }
+}
+
+// store = lapisan yang dipakai di seluruh aplikasi. Baca tetap dari cache lokal
+// (cepat, tidak nunggu jaringan). Tulis disimpan lokal dulu (instan), lalu
+// dikirim juga ke Google Sheet di background supaya data ikut tersimpan permanen
+// di sheet dan bisa dipakai lintas perangkat/browser.
+const store = {
+  async get(key){ return baseStore.get(key); },
+  async set(key, value){
+    const r = await baseStore.set(key, value);
+    if(sheetsEnabled){
+      sheetSet(key, value).catch(e => console.error('Gagal sync ke Google Sheet:', key, e));
+    }
+    return r;
+  },
+  async delete(key){ return baseStore.delete(key); },
+  async list(prefix){ return baseStore.list(prefix); }
+};
 
 // Tampilkan banner peringatan kalau tidak ada penyimpanan permanen yang bisa dipakai,
 // supaya user TAHU datanya tidak akan tersimpan (bukan silent fail di console saja).
@@ -1396,6 +1446,7 @@ async function migrateVendorRenames(){
 
 /* ---------------- INIT ---------------- */
 (async () => {
+  await pullAllFromSheet();
   await migrateVendorRenames();
   await loadVendorLabels();
   await loadSkNextDates();
