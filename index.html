@@ -59,7 +59,7 @@
 
   .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;position:sticky;top:8px;z-index:20;}
   .tab{
-    flex:1;min-width:130px;text-align:center;padding:11px;border-radius:8px;background:#fff;color:var(--navy);
+    position:relative;flex:1;min-width:130px;text-align:center;padding:11px;border-radius:8px;background:#fff;color:var(--navy);
     font-weight:bold;font-size:13.5px;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);
     border:2px solid transparent;transition:transform .18s ease,box-shadow .18s ease,background .18s ease,color .18s ease;
   }
@@ -146,18 +146,19 @@
   .sk-vendor-tabs button{position:relative;}
   .sk-vendor-dot{position:absolute;top:6px;right:8px;width:8px;height:8px;border-radius:50%;background:#9C0006;display:none;}
   .sk-vendor-dot.show{display:block;}
-  #skUpdateToast{position:fixed;bottom:24px;right:24px;max-width:340px;background:#fff;border:1px solid #D6E4F0;border-left:4px solid #2E5FA3;border-radius:8px;padding:14px 16px;box-shadow:0 4px 14px rgba(31,56,100,0.18);display:flex;gap:10px;align-items:flex-start;z-index:9999;transform:translateY(12px);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease;}
-  #skUpdateToast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
-  #skUpdateToast .sk-toast-icon{font-size:18px;margin-top:1px;}
-  #skUpdateToast .sk-toast-title{margin:0 0 3px;font-size:13.5px;font-weight:bold;color:#1F3864;}
-  #skUpdateToast .sk-toast-body{margin:0 0 10px;font-size:12.5px;color:#555;}
-  #skUpdateToast .sk-toast-actions{display:flex;gap:8px;}
-  #skUpdateToast button{border:none;border-radius:6px;padding:6px 14px;font-size:12.5px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
-  #skUpdateToast button:hover{transform:translateY(-1px);}
-  #skUpdateToast button:active{transform:scale(.97);}
-  #skUpdateToast .sk-toast-sync{background:#1F3864;color:#fff;}
-  #skUpdateToast .sk-toast-dismiss{background:#F2F2F2;color:#555;}
-  #skUpdateToast .sk-toast-close{background:none;color:#999;padding:0;margin-left:2px;font-size:16px;line-height:1;align-self:flex-start;}
+  .update-toast{position:fixed;bottom:24px;right:24px;max-width:340px;background:#fff;border:1px solid #D6E4F0;border-left:4px solid #2E5FA3;border-radius:8px;padding:14px 16px;box-shadow:0 4px 14px rgba(31,56,100,0.18);display:flex;gap:10px;align-items:flex-start;z-index:9999;transform:translateY(12px);opacity:0;pointer-events:none;transition:transform .25s ease,opacity .25s ease;}
+  .update-toast.show{transform:translateY(0);opacity:1;pointer-events:auto;}
+  .update-toast .sk-toast-icon{font-size:18px;margin-top:1px;}
+  .update-toast .sk-toast-title{margin:0 0 3px;font-size:13.5px;font-weight:bold;color:#1F3864;}
+  .update-toast .sk-toast-body{margin:0 0 10px;font-size:12.5px;color:#555;}
+  .update-toast .sk-toast-actions{display:flex;gap:8px;}
+  .update-toast button{border:none;border-radius:6px;padding:6px 14px;font-size:12.5px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease;}
+  .update-toast button:hover{transform:translateY(-1px);}
+  .update-toast button:active{transform:scale(.97);}
+  .update-toast .sk-toast-sync{background:#1F3864;color:#fff;}
+  .update-toast .sk-toast-dismiss{background:#F2F2F2;color:#555;}
+  .update-toast .sk-toast-close{background:none;color:#999;padding:0;margin-left:2px;font-size:16px;line-height:1;align-self:flex-start;}
+  #rcUpdateToast{bottom:auto;top:24px;}
   .sk-sync-bar .sk-sync-actions{display:flex;gap:6px;flex-wrap:wrap;}
   .sk-sync-bar button{background:var(--hilite);color:var(--navy);border:none;border-radius:7px;padding:7px 12px;font-weight:bold;font-size:11.5px;cursor:pointer;white-space:nowrap;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
   .sk-sync-bar button:hover{background:#c3d7ee;transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
@@ -211,8 +212,12 @@
   /* Rincian Status Pemenuhan view */
   .rc-vendor-block{background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08);margin-bottom:14px;transition:box-shadow .2s ease;}
   .rc-vendor-block:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
-  .rc-vendor-head{background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;padding:10px 14px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
+  .rc-vendor-head{position:relative;background:linear-gradient(135deg,var(--navy),var(--accent));color:#fff;padding:10px 14px;font-size:13px;font-weight:bold;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;}
   .rc-vendor-head .rc-pjo{font-size:11px;font-weight:normal;opacity:.85;}
+  .rc-sync-btn{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:6px;padding:5px 10px;font-size:11px;font-weight:bold;cursor:pointer;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
+  .rc-sync-btn:hover{background:rgba(255,255,255,.32);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
+  .rc-sync-btn:active{transform:scale(.96);}
+  .rc-sync-btn:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none;}
   table.rc-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.rc-table th{background:var(--accent);color:#fff;padding:7px 6px;text-align:center;font-size:11px;}
   table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
@@ -261,7 +266,7 @@
 
   <div class="tabs">
     <div class="tab active" data-view="summarykinerja">📈 Summary Kinerja PJP</div>
-    <div class="tab" data-view="rincian">📋 Rincian Status Pemenuhan</div>
+    <div class="tab" data-view="rincian">📋 Rincian Status Pemenuhan<span class="sk-sync-badge" id="rcSyncBadge">0</span></div>
     <div class="tab" data-view="ncpjp">📋 NC Pemenuhan PJP</div>
   </div>
 
@@ -335,7 +340,7 @@
 
   <!-- ================= VIEW: RINCIAN STATUS PEMENUHAN ================= -->
   <div class="view" id="view-rincian">
-    <div class="rc-note">Rincian jumlah item checklist per aspek berdasarkan Status Pemenuhan (Sudah / Dalam Proses / Belum / N/A) — isi manual langsung di kolom tabel, tersimpan otomatis. Aspek bertanda N/A berarti di luar ruang lingkup penilaian mitra tersebut. <span id="rcSaveStatus" class="rc-save-status"></span></div>
+    <div class="rc-note">Rincian jumlah item checklist per aspek berdasarkan Status Pemenuhan (Sudah / Dalam Proses / Belum / N/A) — isi manual langsung di kolom tabel, tersimpan otomatis. Aspek bertanda N/A berarti di luar ruang lingkup penilaian mitra tersebut. Sistem otomatis memeriksa perubahan Status Pemenuhan di spreadsheet setiap 90 detik dan akan memberi notifikasi bila ada perbedaan. <span id="rcSaveStatus" class="rc-save-status"></span></div>
     <div id="rcContainer"></div>
   </div>
 
@@ -396,7 +401,7 @@
   <footer>Maintain. Monitor. Improve. — Digitech Monitoring Team</footer>
 </div>
 
-<div id="skUpdateToast">
+<div id="skUpdateToast" class="update-toast">
   <span class="sk-toast-icon">🔔</span>
   <div style="flex:1">
     <p class="sk-toast-title">Ada pembaruan di Spreadsheet</p>
@@ -407,6 +412,18 @@
     </div>
   </div>
   <button type="button" class="sk-toast-close" id="skToastCloseBtn" aria-label="Tutup">×</button>
+</div>
+<div id="rcUpdateToast" class="update-toast">
+  <span class="sk-toast-icon">📋</span>
+  <div style="flex:1">
+    <p class="sk-toast-title">Ada perubahan Status Pemenuhan</p>
+    <p class="sk-toast-body" id="rcToastBody"></p>
+    <div class="sk-toast-actions">
+      <button type="button" class="sk-toast-sync" id="rcToastSyncBtn">Sync sekarang</button>
+      <button type="button" class="sk-toast-dismiss" id="rcToastDismissBtn">Nanti</button>
+    </div>
+  </div>
+  <button type="button" class="sk-toast-close" id="rcToastCloseBtn" aria-label="Tutup">×</button>
 </div>
 
 <script>
@@ -1049,7 +1066,7 @@ function renderRincian(){
       return acc;
     }, {sudah:0,proses:0,belum:0,na:0});
     return `<div class="rc-vendor-block">
-      <div class="rc-vendor-head"><span>${vendorDisplay(vendor)}</span></div>
+      <div class="rc-vendor-head" data-vendor="${vendor}"><span>${vendorDisplay(vendor)}</span><button type="button" class="rc-sync-btn" data-vendor="${vendor}">🔄 Sync</button></div>
       <table class="rc-table">
         <thead><tr><th style="text-align:left;">Aspek Penilaian</th><th>Sudah</th><th>Dalam Proses</th><th>Belum</th><th>N/A</th></tr></thead>
         <tbody>${bodyRows}
@@ -1072,6 +1089,25 @@ function renderRincian(){
       scheduleRcSave();
     });
   });
+
+  el.querySelectorAll('.rc-sync-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      const vendor = btn.dataset.vendor;
+      const original = btn.textContent;
+      btn.disabled = true; btn.textContent = '...';
+      try{
+        const n = await rcSyncVendorFromSheet(vendor);
+        btn.textContent = n > 0 ? `✓ ${n} update` : '✓ Sesuai';
+      }catch(err){
+        btn.textContent = '⚠ Gagal';
+        console.error('Gagal sync Rincian manual:', vendor, err);
+      }
+      setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1800);
+    });
+  });
+
+  rcRenderUpdateIndicators();
 }
 
 function rcUpdateVendorTotal(vendor){
@@ -1086,6 +1122,174 @@ function rcUpdateVendorTotal(vendor){
   row.querySelector('.rc-tot-proses').textContent = totals.proses;
   row.querySelector('.rc-tot-belum').textContent = totals.belum;
   row.querySelector('.rc-tot-na').textContent = totals.na;
+}
+
+/* ---- Rincian Status Pemenuhan: deteksi perubahan otomatis dari Spreadsheet ----
+   Membaca baris-baris item checklist per aspek (bukan tabel ringkasan Nilai Awal yang
+   dipakai Summary Kinerja), lalu menghitung ulang jumlah Sudah/Dalam Proses/Belum/N/A
+   per aspek dari kolom "Status Pemenuhan". Hasilnya dibandingkan dengan rcData yang
+   tersimpan -- kalau beda, tampilkan badge/dot/toast (TIDAK menimpa data otomatis). */
+const RC_ASPECT_MATCH = ["Teknis Operasional","Keselamatan Pertambangan","SMKP","Lingkungan Hidup","Konservasi","Standarisasi Usaha","Improvement"];
+function rcMatchAspectIndex(text){
+  const t = String(text || '').toLowerCase();
+  for(let i = 0; i < RC_ASPECT_MATCH.length; i++){
+    if(t.indexOf(RC_ASPECT_MATCH[i].toLowerCase()) !== -1) return i;
+  }
+  return -1;
+}
+// Judul section aspek ("1. Aspek Teknis Operasional") bisa ada di kolom B ATAU C tergantung
+// bagaimana sheet-nya diformat/merge cell -- cek keduanya, jangan asumsikan satu posisi tetap.
+// Baris item (punya Nilai Max numerik) tidak pernah diperlakukan sebagai judul section.
+function rcFindAspectHeaderText(cells){
+  const nilaiCell = cells[4];
+  if(nilaiCell && typeof nilaiCell.v === 'number') return null;
+  for(let idx = 1; idx <= 2; idx++){
+    const c = cells[idx];
+    if(c && typeof c.v === 'string' && /aspek/i.test(c.v) && !/^progress/i.test(c.v.trim())){
+      return c.v;
+    }
+  }
+  return null;
+}
+function rcClassifyStatus(raw){
+  const s = String(raw || '').trim().toLowerCase();
+  if(s === 'sudah') return 'sudah';
+  if(s.indexOf('proses') !== -1) return 'proses';
+  if(s === 'belum') return 'belum';
+  return 'na';
+}
+async function rcFetchSheetCounts(vendorName){
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const raw = await res.text();
+  const match = raw.match(/setResponse\(([\s\S]*)\);?\s*$/);
+  if(!match) throw new Error('Format respons tidak dikenali');
+  const json = JSON.parse(match[1]);
+  if(json.status === 'error'){
+    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || 'Sheet/tab tidak ditemukan';
+    throw new Error(msg);
+  }
+  const rows = (json.table && json.table.rows) || [];
+  const counts = RINCIAN_ASPEK_LABELS.map(() => null);
+  let currentIdx = -1;
+  rows.forEach(row => {
+    const cells = row.c || [];
+    const headerText = rcFindAspectHeaderText(cells);
+    if(headerText !== null){
+      const idx = rcMatchAspectIndex(headerText);
+      if(idx !== -1){ currentIdx = idx; if(!counts[idx]) counts[idx] = {sudah:0,proses:0,belum:0,na:0}; }
+      return;
+    }
+    if(currentIdx === -1) return;
+    const nilaiCell = cells[4]; // kolom E: Nilai Max -- penanda baris item checklist
+    if(!nilaiCell || typeof nilaiCell.v !== 'number') return;
+    const statusCell = cells[5]; // kolom F: Status Pemenuhan
+    const cls = rcClassifyStatus(statusCell ? statusCell.v : '');
+    counts[currentIdx][cls]++;
+  });
+  if(counts.every(c => c === null)){
+    throw new Error('Tidak ditemukan section "Aspek..." di sheet vendor ini -- format/kolom mungkin berbeda dari yang diharapkan.');
+  }
+  return counts;
+}
+function rcCountDiff(vendor, freshCounts){
+  let diff = 0;
+  freshCounts.forEach((fresh, i) => {
+    if(!fresh || !rcIsInScope(vendor, i)) return;
+    const stored = (rcData[vendor] && rcData[vendor][i]) || {sudah:0,proses:0,belum:0,na:0};
+    if(stored.sudah !== fresh.sudah || stored.proses !== fresh.proses || stored.belum !== fresh.belum || stored.na !== fresh.na) diff++;
+  });
+  return diff;
+}
+const RC_CHECK_INTERVAL_MS = 90000; // sama seperti Summary Kinerja, cek berkala tiap 90 detik
+let rcPendingUpdates = {}; // { namaVendor: jumlah aspek berubah }
+let rcFreshCache = {}; // cache hasil fetch terakhir per vendor supaya klik "Sync" tidak fetch ulang
+let rcToastDismissedFor = new Set();
+let rcCheckTimer = null;
+
+async function rcCheckVendorForUpdate(vendor){
+  try{
+    const fresh = await rcFetchSheetCounts(vendor);
+    rcFreshCache[vendor] = fresh;
+    const diff = rcCountDiff(vendor, fresh);
+    if(diff > 0) rcPendingUpdates[vendor] = diff; else delete rcPendingUpdates[vendor];
+  }catch(e){
+    // Cek diam-diam saja kalau gagal (sheet belum bisa diakses/offline) -- tidak mengganggu tampilan.
+  }
+}
+async function rcCheckAllVendorsForUpdates(){
+  for(const vendor of SK_VENDORS){ await rcCheckVendorForUpdate(vendor); }
+  rcRenderUpdateIndicators();
+}
+function rcRenderUpdateIndicators(){
+  const vendorsWithUpdate = Object.keys(rcPendingUpdates);
+  const badge = document.getElementById('rcSyncBadge');
+  if(badge){
+    if(vendorsWithUpdate.length > 0){ badge.textContent = vendorsWithUpdate.length; badge.classList.add('show'); }
+    else badge.classList.remove('show');
+  }
+  document.querySelectorAll('.rc-vendor-head').forEach(head => {
+    const vendor = head.dataset.vendor;
+    let dot = head.querySelector('.sk-vendor-dot');
+    if(!dot){ dot = document.createElement('span'); dot.className = 'sk-vendor-dot'; dot.style.cssText = 'position:absolute;top:-4px;right:-4px;'; head.style.overflow = 'visible'; head.appendChild(dot); }
+    if(rcPendingUpdates[vendor]) dot.classList.add('show'); else dot.classList.remove('show');
+  });
+  rcMaybeShowToast();
+}
+function rcMaybeShowToast(){
+  const toast = document.getElementById('rcUpdateToast');
+  if(!toast) return;
+  const target = Object.keys(rcPendingUpdates).find(v => !rcToastDismissedFor.has(v));
+  if(!target){ toast.classList.remove('show'); return; }
+  document.getElementById('rcToastBody').textContent =
+    `${vendorDisplay(target)} — ${rcPendingUpdates[target]} aspek berubah di checklist Status Pemenuhan. Data lokal belum ditimpa.`;
+  toast.dataset.vendor = target;
+  toast.classList.add('show');
+}
+async function rcApplyFreshToVendor(vendor, freshCounts){
+  let updated = 0;
+  if(!rcData[vendor]) rcData[vendor] = RINCIAN_ASPEK_LABELS.map(() => null);
+  freshCounts.forEach((fresh, i) => {
+    if(!fresh || !rcIsInScope(vendor, i)) return;
+    rcData[vendor][i] = Object.assign({}, fresh);
+    updated++;
+  });
+  if(updated > 0) await saveRcData();
+  return updated;
+}
+async function rcSyncVendorFromSheet(vendor){
+  const fresh = rcFreshCache[vendor] || await rcFetchSheetCounts(vendor);
+  const updated = await rcApplyFreshToVendor(vendor, fresh);
+  if(updated > 0) renderRincian();
+  delete rcPendingUpdates[vendor];
+  rcToastDismissedFor.delete(vendor);
+  rcRenderUpdateIndicators();
+  return updated;
+}
+document.getElementById('rcToastSyncBtn').onclick = async () => {
+  const toast = document.getElementById('rcUpdateToast');
+  const target = toast.dataset.vendor;
+  if(!target) return;
+  toast.classList.remove('show');
+  try{ await rcSyncVendorFromSheet(target); }
+  catch(e){ console.error('Gagal sync Rincian dari notifikasi', target, e); }
+};
+document.getElementById('rcToastDismissBtn').onclick = () => {
+  const toast = document.getElementById('rcUpdateToast');
+  if(toast.dataset.vendor) rcToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+  rcMaybeShowToast();
+};
+document.getElementById('rcToastCloseBtn').onclick = () => {
+  const toast = document.getElementById('rcUpdateToast');
+  if(toast.dataset.vendor) rcToastDismissedFor.add(toast.dataset.vendor);
+  toast.classList.remove('show');
+};
+function rcStartAutoCheck(){
+  if(rcCheckTimer) clearInterval(rcCheckTimer);
+  rcCheckAllVendorsForUpdates();
+  rcCheckTimer = setInterval(rcCheckAllVendorsForUpdates, RC_CHECK_INTERVAL_MS);
 }
 
 /* ---- Google Sheets auto-sync ---- */
@@ -1481,6 +1685,7 @@ async function migrateVendorRenames(){
   renderRincian();
   renderSummaryKinerja();
   skStartAutoCheck();
+  rcStartAutoCheck();
 })();
 
 /* ---------------- FLUSH PENYIMPANAN SEBELUM REFRESH/TUTUP TAB ----------------
