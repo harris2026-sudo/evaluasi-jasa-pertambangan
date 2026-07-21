@@ -396,6 +396,19 @@
   <footer>Maintain. Monitor. Improve. — Digitech Monitoring Team</footer>
 </div>
 
+<div id="skUpdateToast">
+  <span class="sk-toast-icon">🔔</span>
+  <div style="flex:1">
+    <p class="sk-toast-title">Ada pembaruan di Spreadsheet</p>
+    <p class="sk-toast-body" id="skToastBody"></p>
+    <div class="sk-toast-actions">
+      <button type="button" class="sk-toast-sync" id="skToastSyncBtn">Sync sekarang</button>
+      <button type="button" class="sk-toast-dismiss" id="skToastDismissBtn">Nanti</button>
+    </div>
+  </div>
+  <button type="button" class="sk-toast-close" id="skToastCloseBtn" aria-label="Tutup">×</button>
+</div>
+
 <script>
 /* ---------------- STORAGE LAYER (auto fallback) ---------------- */
 // Deteksi apakah localStorage benar-benar bisa dipakai (bisa gagal dengan
@@ -1500,17 +1513,5 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('pagehide', flushAllPendingSaves);
 window.addEventListener('beforeunload', flushAllPendingSaves);
 </script>
-<div id="skUpdateToast">
-  <span class="sk-toast-icon">🔔</span>
-  <div style="flex:1">
-    <p class="sk-toast-title">Ada pembaruan di Spreadsheet</p>
-    <p class="sk-toast-body" id="skToastBody"></p>
-    <div class="sk-toast-actions">
-      <button type="button" class="sk-toast-sync" id="skToastSyncBtn">Sync sekarang</button>
-      <button type="button" class="sk-toast-dismiss" id="skToastDismissBtn">Nanti</button>
-    </div>
-  </div>
-  <button type="button" class="sk-toast-close" id="skToastCloseBtn" aria-label="Tutup">×</button>
-</div>
 </body>
 </html>
