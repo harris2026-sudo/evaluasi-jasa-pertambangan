@@ -164,10 +164,10 @@
   .sk-sync-bar button:disabled{opacity:.5;cursor:default;transform:none;box-shadow:none;}
   .sk-sync-bar a.sk-open-sheet{background:var(--accent);color:#fff;text-decoration:none;display:inline-block;transition:transform .15s ease,box-shadow .15s ease,background .15s ease;}
   .sk-sync-bar a.sk-open-sheet:hover{background:var(--navy);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.1);}
-  .sk-next-date{flex:1;min-width:160px;max-width:260px;border:1.5px solid var(--accent);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;color:var(--navy);background:#fff;cursor:text;text-align:center;transition:background .15s ease,box-shadow .15s ease;}
+  .sk-next-date{flex:1;min-width:160px;max-width:260px;border:1.5px solid var(--accent);border-radius:7px;padding:6px 10px;font-size:12px;font-weight:bold;color:var(--navy);background:#fff;cursor:text;text-align:center;transition:background .15s ease,box-shadow .15s ease;font-family:inherit;}
   .sk-next-date:hover{background:var(--hilite);}
   .sk-next-date:focus{outline:none;background:var(--hilite);box-shadow:0 0 0 2px var(--accent);}
-  .sk-next-date:empty::before{content:"Klik untuk isi tanggal penilaian berikutnya";color:#9aa4b2;font-weight:normal;}
+  .sk-next-date::placeholder{color:#9aa4b2;font-weight:normal;}
   .sk-info{background:#fff;border-radius:10px;padding:12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);transition:box-shadow .2s ease;}
   .sk-info:hover{box-shadow:0 4px 14px rgba(31,56,100,.1);}
   .sk-info-row{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px;}
@@ -270,7 +270,7 @@
     <div class="sk-vendor-tabs" id="skVendorTabs"></div>
     <div class="sk-sync-bar" id="skSyncBar">
       <span id="skSyncStatus">—</span>
-      <div class="sk-next-date" id="skNextDate" contenteditable="true" spellcheck="false" title="Tanggal penilaian PJP berikutnya (klik untuk edit)"></div>
+      <input type="text" class="sk-next-date" id="skNextDate" spellcheck="false" autocomplete="off" placeholder="Klik untuk isi tanggal penilaian berikutnya" title="Tanggal penilaian PJP berikutnya (klik untuk edit)">
       <div class="sk-sync-actions">
         <button type="button" id="skSyncBtn">🔄 Sync dari Spreadsheet<span class="sk-sync-badge" id="skSyncBadge">0</span></button>
       </div>
@@ -666,21 +666,18 @@ async function saveSkNextDates(){
 function renderSkNextDate(){
   const el = document.getElementById('skNextDate');
   if(!el) return;
-  el.textContent = skNextDates[skVendor] || '';
+  el.value = skNextDates[skVendor] || '';
 }
 
 const skNextDateEl = document.getElementById('skNextDate');
 if(skNextDateEl){
   skNextDateEl.addEventListener('input', () => {
-    const raw = skNextDateEl.textContent;
-    // Kalau isinya cuma spasi/kosong, jangan simpan sebagai override —
-    // biarkan jadwal default (seed) tetap tampil kalau tiba-tiba ke-flush saat refresh.
-    skNextDates[skVendor] = raw.trim() ? raw : '';
+    skNextDates[skVendor] = skNextDateEl.value;
     scheduleSkNextDateSave();
   });
   skNextDateEl.addEventListener('blur', () => {
-    const clean = skNextDateEl.textContent.replace(/\s+/g, ' ').trim();
-    skNextDateEl.textContent = clean;
+    const clean = skNextDateEl.value.replace(/\s+/g, ' ').trim();
+    skNextDateEl.value = clean;
     skNextDates[skVendor] = clean;
     clearTimeout(skNextDateSaveTimer);
     saveSkNextDates();
