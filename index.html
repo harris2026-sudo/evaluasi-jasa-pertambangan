@@ -218,7 +218,7 @@
   .rc-sync-btn:hover{background:rgba(255,255,255,.32);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
   .rc-sync-btn:active{transform:scale(.96);}
   .rc-sync-btn:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none;}
-  .rc-sync-err{position:absolute;top:100%;right:14px;margin-top:4px;background:#FFC7CE;color:#9C0006;font-size:11px;font-weight:normal;padding:5px 10px;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,.15);max-width:280px;z-index:5;}
+  .rc-sync-err{position:absolute;top:100%;right:14px;margin-top:4px;background:#FFC7CE;color:#9C0006;font-size:11px;font-weight:normal;padding:5px 10px;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,.15);max-width:480px;word-break:break-word;z-index:5;}
   table.rc-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.rc-table th{background:var(--accent);color:#fff;padding:7px 6px;text-align:center;font-size:11px;}
   table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
@@ -1111,7 +1111,7 @@ function renderRincian(){
         errEl.className = 'rc-sync-err';
         errEl.textContent = err.message;
         head.appendChild(errEl);
-        setTimeout(() => { if(errEl && errEl.parentNode) errEl.remove(); }, 8000);
+        setTimeout(() => { if(errEl && errEl.parentNode) errEl.remove(); }, 20000);
       }
       setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1800);
     });
@@ -1200,7 +1200,8 @@ async function rcFetchSheetCounts(vendorName){
     if(cls) counts[currentIdx][cls]++;
   });
   if(counts.every(c => c === null)){
-    throw new Error('Tidak ditemukan section "Aspek..." di sheet vendor ini -- format/kolom mungkin berbeda dari yang diharapkan.');
+    const sample = rows.slice(0, 3).map(r => (r.c || []).map(c => c ? c.v : null));
+    throw new Error(`Tidak ditemukan section "Aspek..." (baris terbaca dari sheet: ${rows.length}). Sample 3 baris pertama: ${JSON.stringify(sample)}`);
   }
   return counts;
 }
