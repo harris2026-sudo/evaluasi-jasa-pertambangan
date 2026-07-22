@@ -218,6 +218,7 @@
   .rc-sync-btn:hover{background:rgba(255,255,255,.32);transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.15);}
   .rc-sync-btn:active{transform:scale(.96);}
   .rc-sync-btn:disabled{opacity:.65;cursor:default;transform:none;box-shadow:none;}
+  .rc-sync-err{position:absolute;top:100%;right:14px;margin-top:4px;background:#FFC7CE;color:#9C0006;font-size:11px;font-weight:normal;padding:5px 10px;border-radius:6px;box-shadow:0 3px 8px rgba(0,0,0,.15);max-width:280px;z-index:5;}
   table.rc-table{width:100%;border-collapse:collapse;font-size:12px;}
   table.rc-table th{background:var(--accent);color:#fff;padding:7px 6px;text-align:center;font-size:11px;}
   table.rc-table td{padding:7px 6px;text-align:center;border-bottom:1px solid #eee;transition:background .12s ease;}
@@ -1094,6 +1095,9 @@ function renderRincian(){
     btn.addEventListener('click', async (e) => {
       e.stopPropagation();
       const vendor = btn.dataset.vendor;
+      const head = btn.closest('.rc-vendor-head');
+      let errEl = head.querySelector('.rc-sync-err');
+      if(errEl) errEl.remove();
       const original = btn.textContent;
       btn.disabled = true; btn.textContent = '...';
       try{
@@ -1101,7 +1105,13 @@ function renderRincian(){
         btn.textContent = n > 0 ? `✓ ${n} update` : '✓ Sesuai';
       }catch(err){
         btn.textContent = '⚠ Gagal';
+        btn.title = err.message;
         console.error('Gagal sync Rincian manual:', vendor, err);
+        errEl = document.createElement('span');
+        errEl.className = 'rc-sync-err';
+        errEl.textContent = err.message;
+        head.appendChild(errEl);
+        setTimeout(() => { if(errEl && errEl.parentNode) errEl.remove(); }, 8000);
       }
       setTimeout(() => { btn.disabled = false; btn.textContent = original; }, 1800);
     });
@@ -1156,7 +1166,8 @@ function rcClassifyStatus(raw){
   if(s === 'sudah') return 'sudah';
   if(s.indexOf('proses') !== -1) return 'proses';
   if(s === 'belum') return 'belum';
-  return 'na';
+  if(s === 'n/a' || s === 'na') return 'na';
+  return null; // dropdown Status Pemenuhan belum diisi -- jangan dihitung ke kategori manapun
 }
 async function rcFetchSheetCounts(vendorName){
   const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
@@ -1186,7 +1197,7 @@ async function rcFetchSheetCounts(vendorName){
     if(!nilaiCell || typeof nilaiCell.v !== 'number') return;
     const statusCell = cells[5]; // kolom F: Status Pemenuhan
     const cls = rcClassifyStatus(statusCell ? statusCell.v : '');
-    counts[currentIdx][cls]++;
+    if(cls) counts[currentIdx][cls]++;
   });
   if(counts.every(c => c === null)){
     throw new Error('Tidak ditemukan section "Aspek..." di sheet vendor ini -- format/kolom mungkin berbeda dari yang diharapkan.');
