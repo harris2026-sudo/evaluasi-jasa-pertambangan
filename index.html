@@ -907,6 +907,13 @@ async function renderNcPjp(){
 
 /* ================= SUMMARY KINERJA PJP ENGINE ================= */
 const SK_VENDORS = ["Minergo Visi Maxima","Visi Global Technology","Vixmo Transportasi Cerdas","Bening Guru Semesta","Lintech Duta Pratama"];
+// Nama vendor di aplikasi sudah di-rename ("Vixmo Solusi Cerdas" -> "Vixmo Transportasi Cerdas"),
+// tapi nama TAB di Google Sheets belum ikut diubah. Map ini menerjemahkan nama vendor (dipakai
+// di app/UI) ke nama tab asli di spreadsheet, khusus dipakai saat fetch data dari sheet.
+const SK_VENDOR_SHEET_TAB = { "Vixmo Transportasi Cerdas": "Vixmo Solusi Cerdas" };
+function skResolveSheetTabName(vendorName){
+  return SK_VENDOR_SHEET_TAB[vendorName] || vendorName;
+}
 const SK_ASPECTS = [
   { no:1, name:"Aspek Teknis Operasional", bobot:0.15, max:100 },
   { no:2, name:"Aspek Keselamatan Pertambangan", bobot:0.20, max:100 },
@@ -1173,7 +1180,8 @@ function rcClassifyStatus(raw){
   return null; // dropdown Status Pemenuhan belum diisi -- jangan dihitung ke kategori manapun
 }
 async function rcFetchSheetCounts(vendorName){
-  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
+  const sheetTabName = skResolveSheetTabName(vendorName);
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(sheetTabName)}`;
   const res = await fetch(url);
   if(!res.ok) throw new Error('HTTP ' + res.status);
   const raw = await res.text();
@@ -1319,7 +1327,8 @@ function skSetSyncStatus(text, cls){
 }
 
 async function skFetchSheetProgress(vendorName){
-  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(vendorName)}`;
+  const sheetTabName = skResolveSheetTabName(vendorName);
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(sheetTabName)}`;
   const res = await fetch(url);
   if(!res.ok) throw new Error('HTTP ' + res.status);
   const raw = await res.text();
