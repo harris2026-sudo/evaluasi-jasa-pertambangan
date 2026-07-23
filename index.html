@@ -907,12 +907,55 @@ async function renderNcPjp(){
 
 /* ================= SUMMARY KINERJA PJP ENGINE ================= */
 const SK_VENDORS = ["Minergo Visi Maxima","Visi Global Technology","Vixmo Transportasi Cerdas","Bening Guru Semesta","Lintech Duta Pratama"];
-// Nama vendor di aplikasi sudah di-rename ("Vixmo Solusi Cerdas" -> "Vixmo Transportasi Cerdas"),
-// tapi nama TAB di Google Sheets belum ikut diubah. Map ini menerjemahkan nama vendor (dipakai
-// di app/UI) ke nama tab asli di spreadsheet, khusus dipakai saat fetch data dari sheet.
-const SK_VENDOR_SHEET_TAB = { "Vixmo Transportasi Cerdas": "Vixmo Solusi Cerdas" };
-function skResolveSheetTabName(vendorName){
-  return SK_VENDOR_SHEET_TAB[vendorName] || vendorName;
+// Fetch data sheet pakai gid (nomor tab), BUKAN nama tab, lalu ambil lewat endpoint CSV export
+// (bukan gviz JSON). Dua alasan:
+// 1) gid tidak berubah walau nama tab di-rename di Google Sheets (menghindari masalah nama tab
+//    yang tidak sinkron dengan nama vendor di app).
+// 2) endpoint gviz JSON otomatis menebak tipe data per kolom -- kalau satu kolom isinya campur
+//    angka & teks (mis. kolom "No" isinya angka item TAPI juga teks judul section "1. Aspek..."),
+//    gviz akan meng-null-kan sel bertipe minoritas. Ini yang menyebabkan judul section hilang
+//    total dari hasil fetch walau baris section-nya ada di sheet. Endpoint CSV export mengirim
+//    isi sel apa adanya sebagai teks, tidak kena masalah ini.
+const SK_VENDOR_GID = {
+  "Minergo Visi Maxima": "1171156564",
+  "Visi Global Technology": "2098756025",
+  "Vixmo Transportasi Cerdas": "602388943",
+  "Bening Guru Semesta": "537798305",
+  "Lintech Duta Pratama": "97437578",
+};
+// Parser CSV minimal (menangani quote ganda "" dan koma di dalam sel yang di-quote), cukup untuk
+// kebutuhan export CSV Google Sheets tanpa perlu load library eksternal.
+function skParseCsv(text){
+  const rows = [];
+  let row = [];
+  let field = '';
+  let inQuotes = false;
+  for(let i = 0; i < text.length; i++){
+    const c = text[i];
+    if(inQuotes){
+      if(c === '"'){
+        if(text[i + 1] === '"'){ field += '"'; i++; }
+        else inQuotes = false;
+      } else field += c;
+    } else {
+      if(c === '"') inQuotes = true;
+      else if(c === ','){ row.push(field); field = ''; }
+      else if(c === '\r'){ /* diabaikan, \n yang menandai akhir baris */ }
+      else if(c === '\n'){ row.push(field); rows.push(row); row = []; field = ''; }
+      else field += c;
+    }
+  }
+  if(field !== '' || row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+async function skFetchSheetRowsCSV(vendorName){
+  const gid = SK_VENDOR_GID[vendorName];
+  if(!gid) throw new Error(`GID untuk vendor "${vendorName}" belum terdaftar di SK_VENDOR_GID`);
+  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/export?format=csv&gid=${gid}`;
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const text = await res.text();
+  return skParseCsv(text);
 }
 const SK_ASPECTS = [
   { no:1, name:"Aspek Teknis Operasional", bobot:0.15, max:100 },
@@ -1162,11 +1205,11 @@ function rcMatchAspectIndex(text){
 // Baris item (punya Nilai Max numerik) tidak pernah diperlakukan sebagai judul section.
 function rcFindAspectHeaderText(cells){
   const nilaiCell = cells[4];
-  if(nilaiCell && typeof nilaiCell.v === 'number') return null;
+  if(nilaiCell !== undefined && nilaiCell !== '' && !isNaN(parseFloat(nilaiCell))) return null;
   for(let idx = 1; idx <= 2; idx++){
     const c = cells[idx];
-    if(c && typeof c.v === 'string' && /aspek/i.test(c.v) && !/^progress/i.test(c.v.trim())){
-      return c.v;
+    if(c && /aspek/i.test(c) && !/^progress/i.test(c.trim())){
+      return c;
     }
   }
   return null;
@@ -1180,23 +1223,10 @@ function rcClassifyStatus(raw){
   return null; // dropdown Status Pemenuhan belum diisi -- jangan dihitung ke kategori manapun
 }
 async function rcFetchSheetCounts(vendorName){
-  const sheetTabName = skResolveSheetTabName(vendorName);
-  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(sheetTabName)}`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const raw = await res.text();
-  const match = raw.match(/setResponse\(([\s\S]*)\);?\s*$/);
-  if(!match) throw new Error('Format respons tidak dikenali');
-  const json = JSON.parse(match[1]);
-  if(json.status === 'error'){
-    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || 'Sheet/tab tidak ditemukan';
-    throw new Error(msg);
-  }
-  const rows = (json.table && json.table.rows) || [];
+  const rows = await skFetchSheetRowsCSV(vendorName);
   const counts = RINCIAN_ASPEK_LABELS.map(() => null);
   let currentIdx = -1;
-  rows.forEach(row => {
-    const cells = row.c || [];
+  rows.forEach(cells => {
     const headerText = rcFindAspectHeaderText(cells);
     if(headerText !== null){
       const idx = rcMatchAspectIndex(headerText);
@@ -1205,13 +1235,13 @@ async function rcFetchSheetCounts(vendorName){
     }
     if(currentIdx === -1) return;
     const nilaiCell = cells[4]; // kolom E: Nilai Max -- penanda baris item checklist
-    if(!nilaiCell || typeof nilaiCell.v !== 'number') return;
+    if(nilaiCell === undefined || nilaiCell === '' || isNaN(parseFloat(nilaiCell))) return;
     const statusCell = cells[5]; // kolom F: Status Pemenuhan
-    const cls = rcClassifyStatus(statusCell ? statusCell.v : '');
+    const cls = rcClassifyStatus(statusCell);
     if(cls) counts[currentIdx][cls]++;
   });
   if(counts.every(c => c === null)){
-    const sample = rows.slice(0, 3).map(r => (r.c || []).map(c => c ? c.v : null));
+    const sample = rows.slice(0, 3);
     throw new Error(`Tidak ditemukan section "Aspek..." (baris terbaca dari sheet: ${rows.length}). Sample 3 baris pertama: ${JSON.stringify(sample)}`);
   }
   return counts;
@@ -1327,33 +1357,20 @@ function skSetSyncStatus(text, cls){
 }
 
 async function skFetchSheetProgress(vendorName){
-  const sheetTabName = skResolveSheetTabName(vendorName);
-  const url = `https://docs.google.com/spreadsheets/d/${SK_SHEET_ID}/gviz/tq?tqx=out:json&headers=0&sheet=${encodeURIComponent(sheetTabName)}`;
-  const res = await fetch(url);
-  if(!res.ok) throw new Error('HTTP ' + res.status);
-  const raw = await res.text();
-  const match = raw.match(/setResponse\(([\s\S]*)\);?\s*$/);
-  if(!match) throw new Error('Format respons tidak dikenali');
-  const json = JSON.parse(match[1]);
-  if(json.status === 'error'){
-    const msg = (json.errors && json.errors[0] && json.errors[0].detailed_message) || 'Sheet/tab tidak ditemukan';
-    throw new Error(msg);
-  }
-  const rows = (json.table && json.table.rows) || [];
+  const rows = await skFetchSheetRowsCSV(vendorName);
   // Cari tabel ringkasan "Aspek Penilaian / Bobot Nilai / Nilai Awal" di bagian bawah sheet.
   // Barisnya berbentuk: [ -, No, "Aspek ...", Bobot, Nilai Max, "Nilai Awal", Nilai Akhir, ... ]
   const nilaiByAspect = {};
-  rows.forEach(row => {
-    const cells = row.c || [];
+  rows.forEach(cells => {
     const noCell = cells[1];
     const nameCell = cells[2];
     const nilaiCell = cells[5];
-    if(!noCell || typeof noCell.v !== 'number') return;
-    if(!nameCell || typeof nameCell.v !== 'string' || !/^Aspek\s/i.test(nameCell.v)) return;
-    const no = Math.round(noCell.v);
+    if(noCell === undefined || noCell === '' || isNaN(parseFloat(noCell))) return;
+    if(!nameCell || !/^Aspek\s/i.test(nameCell)) return;
+    const no = Math.round(parseFloat(noCell));
     if(no < 1 || no > 7) return;
-    if(!nilaiCell || nilaiCell.v === null || nilaiCell.v === undefined) return;
-    const rawVal = String(nilaiCell.v).trim();
+    if(nilaiCell === undefined) return;
+    const rawVal = String(nilaiCell).trim();
     if(rawVal === '' || rawVal.toUpperCase() === 'N/A' || rawVal === '-') return;
     const num = parseFloat(rawVal);
     if(isNaN(num)) return;
