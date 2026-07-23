@@ -138,6 +138,28 @@
   .sk-vendor-tabs button .vt-edit{cursor:pointer;font-size:10px;margin-left:4px;opacity:.55;}
   .sk-vendor-tabs button .vt-edit:hover{opacity:1;}
   .sk-sync-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border-radius:10px;padding:9px 12px;margin-bottom:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:12px;}
+  .period-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border-radius:10px;padding:10px 12px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.08);font-size:12.5px;}
+  .period-bar-label{font-weight:bold;color:var(--navy);white-space:nowrap;}
+  .period-bar select, .period-bar input[type=number]{padding:5px 8px;border:1px solid #D6E4F0;border-radius:6px;font-size:12.5px;}
+  .period-bar-hint{color:#888;font-size:11px;flex:1 1 auto;min-width:180px;}
+  #periodCompareBtn{background:var(--accent);color:#fff;border:none;border-radius:6px;padding:6px 12px;font-size:12px;font-weight:bold;cursor:pointer;white-space:nowrap;}
+  #periodCompareBtn:hover{background:var(--navy);}
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,30,50,.45);display:none;align-items:center;justify-content:center;z-index:10000;padding:16px;}
+  .modal-overlay.show{display:flex;}
+  .modal-box{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:86vh;overflow:auto;box-shadow:0 12px 40px rgba(0,0,0,.3);animation:popIn .2s ease;}
+  .modal-box-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;border-bottom:1px solid var(--hilite);position:sticky;top:0;background:#fff;}
+  .modal-box-head h3{margin:0;font-size:15px;color:var(--navy);}
+  .modal-close-btn{background:none;border:none;font-size:18px;cursor:pointer;color:#888;line-height:1;}
+  .modal-box-body{padding:16px 18px;}
+  .compare-controls{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:16px;}
+  .compare-controls .f{display:flex;flex-direction:column;gap:4px;font-size:11.5px;color:#555;}
+  .compare-controls select{padding:6px 8px;border:1px solid #D6E4F0;border-radius:6px;font-size:12.5px;}
+  .compare-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .compare-table th, .compare-table td{border:1px solid var(--hilite);padding:6px 8px;text-align:center;}
+  .compare-table th{background:var(--navy);color:#fff;}
+  .compare-table td:first-child, .compare-table th:first-child{text-align:left;}
+  .compare-diff-up{color:var(--green);font-weight:bold;}
+  .compare-diff-down{color:var(--red-fg);font-weight:bold;}
   .sk-sync-bar #skSyncStatus{color:#667;}
   .sk-sync-bar #skSyncStatus.ok{color:#1a7f37;font-weight:bold;}
   .sk-sync-bar #skSyncStatus.err{color:#c0392b;font-weight:bold;}
@@ -274,6 +296,40 @@
     <div class="tab" data-view="ncpjp">📋 NC Pemenuhan PJP</div>
   </div>
 
+  <div class="period-bar" id="periodBar">
+    <span class="period-bar-label">🗓️ Periode Penilaian:</span>
+    <select id="periodSemesterSelect"><option value="I">Semester I</option><option value="II">Semester II</option></select>
+    <input type="number" id="periodTahunInput" value="2026">
+    <button type="button" id="periodCompareBtn">📊 Bandingkan Semester</button>
+    <span class="period-bar-hint">Berlaku untuk Summary Kinerja PJP &amp; Rincian Status Pemenuhan. Data tiap periode tersimpan terpisah — ganti periode ini untuk mulai isi semester baru tanpa menimpa data semester sebelumnya. NC Pemenuhan PJP tetap satu daftar berkelanjutan (tidak per-periode).</span>
+  </div>
+
+  <div class="modal-overlay" id="compareModal">
+    <div class="modal-box">
+      <div class="modal-box-head">
+        <h3>📊 Bandingkan Semester</h3>
+        <button type="button" class="modal-close-btn" id="compareModalCloseBtn">✕</button>
+      </div>
+      <div class="modal-box-body">
+        <div class="compare-controls">
+          <div class="f">
+            <label>Mitra (PJP)</label>
+            <select id="compareVendor"></select>
+          </div>
+          <div class="f">
+            <label>Periode A</label>
+            <select id="comparePeriodA"></select>
+          </div>
+          <div class="f">
+            <label>Periode B</label>
+            <select id="comparePeriodB"></select>
+          </div>
+        </div>
+        <div id="compareResult"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- ================= VIEW: SUMMARY KINERJA PJP ================= -->
   <div class="view active" id="view-summarykinerja">
     <div class="sk-vendor-tabs" id="skVendorTabs"></div>
@@ -288,10 +344,10 @@
     <div class="sk-info">
       <div class="sk-info-row">
         <div class="f"><label>Semester</label>
-          <select id="skSemester"><option>I</option><option>II</option></select>
+          <select id="skSemester" disabled title="Diatur lewat pemilih Periode Penilaian di atas"><option>I</option><option>II</option></select>
         </div>
         <div class="f"><label>Tahun</label>
-          <input type="number" id="skTahun" value="2026">
+          <input type="number" id="skTahun" value="2026" disabled title="Diatur lewat pemilih Periode Penilaian di atas">
         </div>
         <div class="f" style="flex:2;"><label>Nama Perusahaan Jasa Pertambangan</label>
           <input type="text" id="skNamaPjp" disabled>
@@ -957,6 +1013,50 @@ async function skFetchSheetRowsCSV(vendorName){
   const text = await res.text();
   return skParseCsv(text);
 }
+
+/* ---------------- PERIODE PENILAIAN (Semester I / II) ----------------
+   Penilaian Jasa Pertambangan dilakukan 2x setahun (Semester I & Semester II). Summary Kinerja
+   PJP dan Rincian Status Pemenuhan disimpan PER PERIODE (tahun+semester) supaya data semester
+   sebelumnya tidak tertimpa saat masuk periode baru, dan bisa dibandingkan kapan saja lewat
+   tombol "Bandingkan Semester". NC Pemenuhan PJP sengaja TIDAK dibuat per-periode -- itu daftar
+   temuan/tindak-lanjut yang sifatnya berkelanjutan, bukan nilai yang di-reset tiap semester. */
+const ACTIVE_PERIOD_KEY = 'app:activePeriod';
+let activePeriod = { tahun: 2026, semester: 'I' };
+function periodKey(p){ p = p || activePeriod; return p.tahun + '-' + p.semester; }
+function periodLabel(p){ p = p || activePeriod; return 'Semester ' + p.semester + ' ' + p.tahun; }
+async function loadActivePeriod(){
+  try{
+    const res = await store.get(ACTIVE_PERIOD_KEY);
+    if(res && res.value){
+      const p = JSON.parse(res.value);
+      if(p && p.tahun && p.semester) activePeriod = p;
+    }
+  }catch(e){ /* belum pernah disimpan, pakai default */ }
+}
+async function saveActivePeriod(){
+  try{ await store.set(ACTIVE_PERIOD_KEY, JSON.stringify(activePeriod)); }catch(e){}
+}
+// Cari semua periode yang punya data tersimpan (dari Summary Kinerja & Rincian Status Pemenuhan),
+// dipakai untuk mengisi pilihan di modal "Bandingkan Semester".
+async function listAvailablePeriods(){
+  const periods = new Set([periodKey(activePeriod)]);
+  try{
+    const r1 = await store.list('summaryKinerja:');
+    (r1 && r1.keys || []).forEach(k => {
+      const p = k.split(':').pop();
+      if(/^\d{4}-(I|II)$/.test(p)) periods.add(p);
+    });
+  }catch(e){}
+  try{
+    const r2 = await store.list('rincianStatusPemenuhan:');
+    (r2 && r2.keys || []).forEach(k => {
+      const p = k.split(':')[1];
+      if(p && /^\d{4}-(I|II)$/.test(p)) periods.add(p);
+    });
+  }catch(e){}
+  return Array.from(periods).sort();
+}
+
 const SK_ASPECTS = [
   { no:1, name:"Aspek Teknis Operasional", bobot:0.15, max:100 },
   { no:2, name:"Aspek Keselamatan Pertambangan", bobot:0.20, max:100 },
@@ -1041,7 +1141,8 @@ const RINCIAN_DATA_DEFAULT = {
   ],
 };
 
-const RC_KEY = 'rincianStatusPemenuhan';
+const RC_KEY_LEGACY = 'rincianStatusPemenuhan'; // key lama sebelum data dipisah per-periode -- dipakai migrasi saja
+function rcKeyFor(period){ return 'rincianStatusPemenuhan:' + periodKey(period); }
 let rcData = {};
 let rcSaveTimer = null;
 
@@ -1055,7 +1156,7 @@ function rcDeepCopyDefault(){
 
 async function loadRcData(){
   try{
-    const res = await store.get(RC_KEY);
+    const res = await store.get(rcKeyFor());
     rcData = (res && res.value) ? JSON.parse(res.value) : rcDeepCopyDefault();
   }catch(e){
     rcData = rcDeepCopyDefault();
@@ -1067,7 +1168,7 @@ async function loadRcData(){
 }
 
 async function saveRcData(){
-  try{ await store.set(RC_KEY, JSON.stringify(rcData)); }catch(e){ console.error('Gagal menyimpan Rincian Status Pemenuhan', e); }
+  try{ await store.set(rcKeyFor(), JSON.stringify(rcData)); }catch(e){ console.error('Gagal menyimpan Rincian Status Pemenuhan', e); }
   const el = document.getElementById('rcSaveStatus');
   if(el){
     const now = new Date();
@@ -1077,6 +1178,7 @@ async function saveRcData(){
   }
 }
 function scheduleRcSave(){ clearTimeout(rcSaveTimer); rcSaveTimer = setTimeout(saveRcData, 500); }
+
 
 // Override khusus tampilan Rincian Status Pemenuhan (TIDAK mengubah bobot/ruang lingkup aspek
 // penilaian di Summary Kinerja PJP — hanya menyembunyikan kolom input di tabel ini menjadi
@@ -1521,7 +1623,7 @@ function skStartAutoCheck(){
   skCheckTimer = setInterval(skCheckAllVendorsForUpdates, SK_CHECK_INTERVAL_MS);
 }
 
-function skKeyFor(vendor){ return 'summaryKinerja:' + vendor; }
+function skKeyFor(vendor, period){ return 'summaryKinerja:' + vendor + ':' + periodKey(period); }
 
 function skPredikat(nilai){
   if(nilai > 90) return 'Emas';
@@ -1601,8 +1703,8 @@ function renderSkResult(){
 let skSaveTimer = null;
 function scheduleSkSave(){ clearTimeout(skSaveTimer); skSaveTimer = setTimeout(saveSkData, 500); }
 async function saveSkData(){
-  skData.semester = document.getElementById('skSemester').value;
-  skData.tahun = document.getElementById('skTahun').value;
+  skData.semester = activePeriod.semester;
+  skData.tahun = activePeriod.tahun;
   skData.pjo = document.getElementById('skPjo').value;
   try{ await store.set(skKeyFor(skVendor), JSON.stringify(skData)); }
   catch(e){ console.error('Gagal menyimpan summary kinerja', e); }
@@ -1610,9 +1712,9 @@ async function saveSkData(){
 async function loadSkData(){
   try{
     const res = await store.get(skKeyFor(skVendor));
-    skData = (res && res.value) ? JSON.parse(res.value) : { semester:"I", tahun:2026, pjo:"", nilai:{} };
+    skData = (res && res.value) ? JSON.parse(res.value) : { semester: activePeriod.semester, tahun: activePeriod.tahun, pjo:"", nilai:{} };
   }catch(e){
-    skData = { semester:"I", tahun:2026, pjo:"", nilai:{} };
+    skData = { semester: activePeriod.semester, tahun: activePeriod.tahun, pjo:"", nilai:{} };
   }
   // Auto-seed dari SK_SEED_NILAI dimatikan atas permintaan — Nilai Awal Summary Kinerja PJP
   // untuk seluruh mitra (MVM, VGT, VSC, BGS, LDP) diisi manual satu per satu.
@@ -1623,8 +1725,8 @@ async function loadSkData(){
 
 function renderSummaryKinerjaUI(){
   document.getElementById('skNamaPjp').value = vendorDisplay(skVendor);
-  document.getElementById('skSemester').value = skData.semester || "I";
-  document.getElementById('skTahun').value = skData.tahun || 2026;
+  document.getElementById('skSemester').value = activePeriod.semester;
+  document.getElementById('skTahun').value = activePeriod.tahun;
   document.getElementById('skPjo').value = skData.pjo || "";
   renderSkVendorTabs();
   renderSkNextDate();
@@ -1632,8 +1734,6 @@ function renderSummaryKinerjaUI(){
   renderSkResult();
 }
 
-document.getElementById('skSemester').onchange = scheduleSkSave;
-document.getElementById('skTahun').oninput = scheduleSkSave;
 document.getElementById('skPjo').oninput = scheduleSkSave;
 document.getElementById('skSyncBtn').onclick = skSyncFromSheet;
 
@@ -1688,15 +1788,15 @@ async function migrateVendorRenames(){
       }
     }catch(e){}
 
-    // 4) Rincian Status Pemenuhan (rincianStatusPemenuhan)
+    // 4) Rincian Status Pemenuhan (key lama sebelum per-periode)
     try{
-      const res = await store.get(RC_KEY);
+      const res = await store.get(RC_KEY_LEGACY);
       if(res && res.value){
         const obj = JSON.parse(res.value);
         if(obj[oldName] !== undefined){
           if(obj[newName] === undefined) obj[newName] = obj[oldName];
           delete obj[oldName];
-          await store.set(RC_KEY, JSON.stringify(obj));
+          await store.set(RC_KEY_LEGACY, JSON.stringify(obj));
         }
       }
     }catch(e){}
@@ -1714,10 +1814,171 @@ async function migrateVendorRenames(){
   }
 }
 
+/* ---------------- MIGRASI DATA LAMA (flat, 1x setahun) -> PER-PERIODE (Semester I/II) ----------------
+   Sebelumnya Summary Kinerja PJP disimpan 1 record per vendor ('summaryKinerja:VendorName'), dan
+   Rincian Status Pemenuhan disimpan 1 record untuk SEMUA vendor ('rincianStatusPemenuhan'). Migrasi
+   ini memindahkan data lama itu ke key baru yang menyertakan periode, TANPA menghapus/menimpa data
+   kalau key baru ternyata sudah terisi (mis. migrasi sudah pernah jalan sebelumnya). Harus jalan
+   SETELAH migrateVendorRenames() supaya nama vendor di key lama sudah benar duluan. */
+async function migratePeriodData(){
+  // Summary Kinerja PJP: periode tujuan diambil dari field semester/tahun yang tersimpan di data
+  // lama itu sendiri (record ini sudah punya field itu sejak awal), fallback ke periode aktif.
+  for(const vendor of SK_VENDORS){
+    try{
+      const oldKey = 'summaryKinerja:' + vendor;
+      const res = await store.get(oldKey);
+      if(res && res.value){
+        const data = JSON.parse(res.value);
+        const p = { tahun: data.tahun || activePeriod.tahun, semester: data.semester || activePeriod.semester };
+        const newKey = skKeyFor(vendor, p);
+        let hasNew = false;
+        try{ const chk = await store.get(newKey); hasNew = !!(chk && chk.value); }catch(e){ hasNew = false; }
+        if(!hasNew){ await store.set(newKey, res.value); }
+        await store.delete(oldKey);
+      }
+    }catch(e){ /* tidak ada data lama untuk vendor ini, lewati */ }
+  }
+  // Rincian Status Pemenuhan: data lama tidak punya field semester sama sekali, jadi dimigrasi ke
+  // periode aktif saat ini (default Semester I 2026 kalau belum pernah diganti).
+  try{
+    const res = await store.get(RC_KEY_LEGACY);
+    if(res && res.value){
+      const newKey = rcKeyFor();
+      let hasNew = false;
+      try{ const chk = await store.get(newKey); hasNew = !!(chk && chk.value); }catch(e){ hasNew = false; }
+      if(!hasNew){ await store.set(newKey, res.value); }
+      await store.delete(RC_KEY_LEGACY);
+    }
+  }catch(e){}
+}
+
+/* ---------------- UI PEMILIH PERIODE & BANDINGKAN SEMESTER ---------------- */
+function renderPeriodBar(){
+  const selSem = document.getElementById('periodSemesterSelect');
+  const inpTahun = document.getElementById('periodTahunInput');
+  if(selSem) selSem.value = activePeriod.semester;
+  if(inpTahun) inpTahun.value = activePeriod.tahun;
+}
+async function onPeriodChange(){
+  const selSem = document.getElementById('periodSemesterSelect');
+  const inpTahun = document.getElementById('periodTahunInput');
+  const tahun = parseInt(inpTahun.value, 10);
+  activePeriod = { tahun: isNaN(tahun) ? activePeriod.tahun : tahun, semester: selSem.value };
+  await saveActivePeriod();
+  await loadRcData();
+  renderRincian();
+  await loadSkData();
+  renderSummaryKinerjaUI();
+}
+document.getElementById('periodSemesterSelect').addEventListener('change', onPeriodChange);
+document.getElementById('periodTahunInput').addEventListener('change', onPeriodChange);
+
+async function skComputeOverallFor(nilai, aspects){
+  let sumWeighted = 0, sumBobot = 0;
+  aspects.forEach(a => {
+    if(a.max === 0) return; // N/A, di luar ruang lingkup
+    const v = nilai[a.no];
+    if(v === undefined || v === null || v === '') return;
+    const n = Number(v) || 0;
+    sumWeighted += a.bobot * n;
+    sumBobot += a.bobot;
+  });
+  return sumBobot > 0 ? Math.round((sumWeighted / sumBobot) * 100) / 100 : 0;
+}
+
+async function openCompareModal(){
+  const modal = document.getElementById('compareModal');
+  const vendorSel = document.getElementById('compareVendor');
+  const periodASel = document.getElementById('comparePeriodA');
+  const periodBSel = document.getElementById('comparePeriodB');
+  vendorSel.innerHTML = SK_VENDORS.map(v => `<option value="${v}">${vendorDisplay(v)}</option>`).join('');
+  vendorSel.value = skVendor;
+  const periods = await listAvailablePeriods();
+  const periodOptionsHtml = periods.map(p => `<option value="${p}">${p.split('-')[1] === 'II' ? 'Semester II ' : 'Semester I '}${p.split('-')[0]}</option>`).join('');
+  periodASel.innerHTML = periodOptionsHtml;
+  periodBSel.innerHTML = periodOptionsHtml;
+  // Default: bandingkan periode aktif dengan periode lain terdekat (kalau ada)
+  const curKey = periodKey(activePeriod);
+  periodBSel.value = curKey;
+  const other = periods.find(p => p !== curKey);
+  periodASel.value = other || curKey;
+  modal.classList.add('show');
+  await renderCompareResult();
+}
+function closeCompareModal(){
+  document.getElementById('compareModal').classList.remove('show');
+}
+document.getElementById('periodCompareBtn').onclick = openCompareModal;
+document.getElementById('compareModalCloseBtn').onclick = closeCompareModal;
+document.getElementById('compareModal').addEventListener('click', (e) => {
+  if(e.target.id === 'compareModal') closeCompareModal();
+});
+document.getElementById('compareVendor').addEventListener('change', renderCompareResult);
+document.getElementById('comparePeriodA').addEventListener('change', renderCompareResult);
+document.getElementById('comparePeriodB').addEventListener('change', renderCompareResult);
+
+function parsePeriodKeyStr(k){
+  const [tahun, semester] = k.split('-');
+  return { tahun: parseInt(tahun, 10), semester };
+}
+async function renderCompareResult(){
+  const resultEl = document.getElementById('compareResult');
+  const vendor = document.getElementById('compareVendor').value;
+  const keyA = document.getElementById('comparePeriodA').value;
+  const keyB = document.getElementById('comparePeriodB').value;
+  if(!vendor || !keyA || !keyB){ resultEl.innerHTML = ''; return; }
+  resultEl.innerHTML = '<p style="color:#888;font-size:12.5px;">Memuat...</p>';
+  const [resA, resB] = await Promise.all([
+    store.get(skKeyFor(vendor, parsePeriodKeyStr(keyA))).catch(() => null),
+    store.get(skKeyFor(vendor, parsePeriodKeyStr(keyB))).catch(() => null),
+  ]);
+  const dataA = (resA && resA.value) ? JSON.parse(resA.value) : { nilai:{} };
+  const dataB = (resB && resB.value) ? JSON.parse(resB.value) : { nilai:{} };
+  const aspects = getSkAspects(vendor);
+  const overallA = await skComputeOverallFor(dataA.nilai || {}, aspects);
+  const overallB = await skComputeOverallFor(dataB.nilai || {}, aspects);
+  const labelA = keyA.split('-')[1] === 'II' ? 'Semester II ' + keyA.split('-')[0] : 'Semester I ' + keyA.split('-')[0];
+  const labelB = keyB.split('-')[1] === 'II' ? 'Semester II ' + keyB.split('-')[0] : 'Semester I ' + keyB.split('-')[0];
+  const rows = aspects.map(a => {
+    const vA = (dataA.nilai || {})[a.no];
+    const vB = (dataB.nilai || {})[a.no];
+    const showA = (a.max === 0) ? 'N/A' : (vA === undefined || vA === null || vA === '' ? '—' : vA);
+    const showB = (a.max === 0) ? 'N/A' : (vB === undefined || vB === null || vB === '' ? '—' : vB);
+    let diffHtml = '';
+    if(a.max !== 0 && typeof vA === 'number' && typeof vB === 'number'){
+      const diff = Math.round((vB - vA) * 100) / 100;
+      if(diff > 0) diffHtml = `<span class="compare-diff-up">▲ +${diff}</span>`;
+      else if(diff < 0) diffHtml = `<span class="compare-diff-down">▼ ${diff}</span>`;
+      else diffHtml = '—';
+    } else diffHtml = '—';
+    return `<tr><td>${a.name}</td><td>${showA}</td><td>${showB}</td><td>${diffHtml}</td></tr>`;
+  }).join('');
+  const overallDiff = Math.round((overallB - overallA) * 100) / 100;
+  const overallDiffHtml = overallDiff > 0 ? `<span class="compare-diff-up">▲ +${overallDiff}</span>`
+    : overallDiff < 0 ? `<span class="compare-diff-down">▼ ${overallDiff}</span>` : '—';
+  resultEl.innerHTML = `
+    <table class="compare-table">
+      <thead><tr><th>Aspek Penilaian</th><th>${labelA}</th><th>${labelB}</th><th>Selisih</th></tr></thead>
+      <tbody>
+        ${rows}
+        <tr style="font-weight:bold;background:var(--zebra);">
+          <td>Nilai Overall</td><td>${overallA.toFixed(2)}</td><td>${overallB.toFixed(2)}</td><td>${overallDiffHtml}</td>
+        </tr>
+        <tr style="font-weight:bold;background:var(--zebra);">
+          <td>Predikat</td><td><span class="sk-predikat ${skPredikat(overallA)}">${skPredikat(overallA).toUpperCase()}</span></td>
+          <td><span class="sk-predikat ${skPredikat(overallB)}">${skPredikat(overallB).toUpperCase()}</span></td><td>—</td>
+        </tr>
+      </tbody>
+    </table>`;
+}
+
 /* ---------------- INIT ---------------- */
 (async () => {
   await pullAllFromSheet();
   await migrateVendorRenames();
+  await loadActivePeriod();
+  await migratePeriodData();
+  renderPeriodBar();
   await loadVendorLabels();
   await loadSkNextDates();
   renderNcVendorSelectOptions();
